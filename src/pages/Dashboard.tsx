@@ -119,7 +119,8 @@ const Dashboard = () => {
     };
   }, [user]);
 
-  const hasCredits = credits !== null && credits > 0;
+  // Must match MINIMUM_CREDITS_REQUIRED in supabase/functions/generate-prompt
+  const hasCredits = credits !== null && credits >= 100;
 
   const handleGenerate = async () => {
     let finalUrl = url.trim();

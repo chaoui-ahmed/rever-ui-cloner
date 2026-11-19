@@ -1,79 +1,64 @@
+#!/usr/bin/env node
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
-// 1. Initialisation du serveur MCP
-const server = new Server({
-  name: "rever-ui-cloner",
-  version: "1.0.0",
-}, {
-  capabilities: {
-    tools: {}
-  }
-});
+const API_URL =
+  process.env.REVER_API_URL ?? "https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt";
 
-// 2. Déclaration de l'outil à l'agent
-server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return {
-    tools: [
-      {
-        name: "clone_ui",
-        description: "Extracts an exact UI/UX blueprint from a URL. Returns a perfect prompt to generate React/Tailwind code. Bypasses anti-bot protections.",
-        inputSchema: {
-          type: "object",
-          properties: {
-            url: { type: "string", description: "The URL of the website to clone (e.g., https://stripe.com)" }
-          },
-          required: ["url"]
-        }
-      }
-    ]
-  };
-});
+const server = new Server({ name: "rever-ui-cloner", version: "1.1.0" }, { capabilities: { tools: {} } });
 
-// 3. Exécution de l'outil quand l'agent l'appelle
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: [
+    {
+      name: "clone_ui",
+      description:
+        "Turn a public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model. Returns text, not code. Costs 1 USDC on Base: call once without payment_tx to get payment details, pay, then call again with payment_tx set to the transaction hash.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          url: { type: "string", description: "Public http(s) URL to recreate, e.g. https://stripe.com" },
+          payment_tx: { type: "string", description: "Base transaction hash of a 1 USDC payment (single use)." },
+        },
+        required: ["url"],
+      },
+    },
+  ],
+}));
+
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  if (request.params.name === "clone_ui") {
-    const url = request.params.arguments.url;
-    
-    try {
-      // Appel à ta fonction Supabase
-      const response = await fetch("https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      });
-      
-      // Gestion de la crypto x402
-      if (response.status === 402) {
-        return { 
-          content: [{ 
-            type: "text", 
-            text: "ERROR 402: Payment Required. To unlock this blueprint, your agent wallet must fulfill an x402 crypto micro-transaction of 1 USDC on the Base Network (Chain ID: 8453)." 
-          }] 
-        };
-      }
-      
-      const data = await response.text();
-      
+  if (request.params.name !== "clone_ui") throw new Error(`Unknown tool: ${request.params.name}`);
+  const { url, payment_tx } = request.params.arguments ?? {};
+
+  const headers = { "Content-Type": "application/json" };
+  const tx = payment_tx ?? process.env.REVER_PAYMENT_TX;
+  if (tx) headers["X-Payment"] = tx;
+  if (process.env.REVER_USER_TOKEN) headers["Authorization"] = `Bearer ${process.env.REVER_USER_TOKEN}`;
+
+  try {
+    const response = await fetch(API_URL, { method: "POST", headers, body: JSON.stringify({ url }) });
+    const data = await response.json().catch(() => ({}));
+
+    if (response.status === 402) {
+      const a = data.accepts?.[0] ?? {};
       return {
-        content: [{ type: "text", text: data }]
-      };
-      
-    } catch (error) {
-      return {
-        content: [{ type: "text", text: `Error connecting to Rever API: ${error.message}` }]
+        isError: true,
+        content: [{
+          type: "text",
+          text:
+            `Payment required${data.reason ? ` (${data.reason})` : ""}. Send ${Number(a.maxAmountRequired ?? 1e6) / 1e6} USDC on Base ` +
+            `(asset ${a.asset}) to ${a.payTo}, then call clone_ui again with payment_tx set to the transaction hash.`,
+        }],
       };
     }
+    if (!response.ok) {
+      return { isError: true, content: [{ type: "text", text: `Rever API error ${response.status}: ${data.error ?? "unknown"}` }] };
+    }
+    return { content: [{ type: "text", text: data.prompt }] };
+  } catch (error) {
+    return { isError: true, content: [{ type: "text", text: `Could not reach Rever API: ${error.message}` }] };
   }
-  
-  throw new Error("Tool not found");
 });
 
-// 4. Démarrage du serveur via l'entrée/sortie standard (STDIO)
-const transport = new StdioServerTransport();
-await server.connect(transport);
-console.error("Rever UI Cloner MCP Server is running on stdio");
+await server.connect(new StdioServerTransport());
+console.error("Rever MCP server running on stdio");

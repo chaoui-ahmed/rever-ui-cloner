@@ -3,28 +3,98 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>REVER</title>
-    <meta name="description" content="Transform any website into a single prompt.">
-    <meta name="author" content="Lovable" />
+    <title>Rever — Turn any website into a prompt to rebuild its UI</title>
+    <meta name="description" content="Paste a URL, get a detailed prompt to recreate that site's UI in Lovable, v0, Claude or Cursor. Web app for humans, pay-per-call API and MCP server for AI agents." />
+    <meta name="author" content="Ahmed Chaoui" />
+    <link rel="canonical" href="https://www.aypiai.online/" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    
-    
+    <!-- Machine-readable entry points for AI agents -->
+    <link rel="alternate" type="text/plain" title="LLM guide" href="/llms.txt" />
+    <link rel="service-desc" type="application/json" href="/openapi.json" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/df66b2de-b064-4e83-b7ff-1da707f604e2/id-preview-8d08bd0c--925abaf7-a9a6-4b33-8dcb-e850483d6e8c.lovable.app-1771725394578.png">
-
+    <meta property="og:site_name" content="Rever" />
+    <meta property="og:url" content="https://www.aypiai.online/" />
+    <meta property="og:title" content="Rever — Turn any website into a prompt to rebuild its UI" />
+    <meta property="og:description" content="Paste a URL, get a detailed prompt to recreate that site's UI with an AI code generator." />
+    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/df66b2de-b064-4e83-b7ff-1da707f604e2/id-preview-8d08bd0c--925abaf7-a9a6-4b33-8dcb-e850483d6e8c.lovable.app-1771725394578.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/df66b2de-b064-4e83-b7ff-1da707f604e2/id-preview-8d08bd0c--925abaf7-a9a6-4b33-8dcb-e850483d6e8c.lovable.app-1771725394578.png">
-    <meta property="og:title" content="REVER">
-  <meta name="twitter:title" content="REVER">
-  <meta property="og:description" content="Transform any website into a single prompt.">
-  <meta name="twitter:description" content="Transform any website into a single prompt.">
-</head>
+    <meta name="twitter:title" content="Rever — Turn any website into a prompt to rebuild its UI" />
+    <meta name="twitter:description" content="Paste a URL, get a detailed prompt to recreate that site's UI with an AI code generator." />
+    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/df66b2de-b064-4e83-b7ff-1da707f604e2/id-preview-8d08bd0c--925abaf7-a9a6-4b33-8dcb-e850483d6e8c.lovable.app-1771725394578.png" />
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://www.aypiai.online/#app",
+          "name": "Rever",
+          "url": "https://www.aypiai.online/",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "Web",
+          "description": "Turns a website URL into a detailed prompt for recreating its UI with an AI code generator such as Lovable, v0, Claude or Cursor.",
+          "author": { "@type": "Person", "name": "Ahmed Chaoui", "url": "https://ahmedchaoui.com" },
+          "offers": [
+            { "@type": "Offer", "name": "Free credits on signup", "price": "0", "priceCurrency": "USD" },
+            { "@type": "Offer", "name": "Agent API call", "price": "1", "priceCurrency": "USD", "description": "1 USDC on Base per request" }
+          ],
+          "sameAs": ["https://github.com/chaoui-ahmed/rever-ui-cloner"]
+        },
+        {
+          "@type": "WebAPI",
+          "name": "Rever UI-to-Prompt API",
+          "description": "POST a URL, receive a UI-recreation prompt. Agents pay 1 USDC on Base per call (HTTP 402, then retry with X-Payment tx hash).",
+          "documentation": "https://www.aypiai.online/llms-full.txt",
+          "termsOfService": "https://www.aypiai.online/terms",
+          "provider": { "@id": "https://www.aypiai.online/#app" }
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How do I clone the UI of a website with AI?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Paste the URL into Rever. It screenshots the page and writes a detailed prompt describing its layout, components, colors and typography. Paste that prompt into Lovable, v0, Bolt, Claude or Cursor to generate the React + Tailwind code." }
+            },
+            {
+              "@type": "Question",
+              "name": "Can an AI agent use Rever without an account?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Yes. POST {\"url\": ...} to the API. It returns HTTP 402 with payment details; send 1 USDC on Base to the given address and retry with the transaction hash in the X-Payment header. There is also an MCP server with a clone_ui tool." }
+            },
+            {
+              "@type": "Question",
+              "name": "Does Rever return code?",
+              "acceptedAnswer": { "@type": "Answer", "text": "No, it returns a design brief written as a prompt. A code model turns it into code, which keeps the output editable and works with any stack." }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
+  </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Static content for crawlers and agents that don't run JavaScript. React replaces it on load. -->
+      <main style="max-width:720px;margin:48px auto;padding:0 20px;font-family:system-ui,sans-serif;line-height:1.6">
+        <h1>Rever: turn any website into a prompt to rebuild its UI</h1>
+        <p>Paste a URL. Rever takes a full-page screenshot and writes a detailed prompt describing the layout, sections, components, colors, typography and spacing. Paste it into Lovable, v0, Bolt, Claude or Cursor to recreate the design in React + Tailwind.</p>
+        <h2>For people</h2>
+        <p><a href="/auth">Sign in</a> and get free credits. Browse sites other users cloned in the <a href="/showcase">showcase</a>.</p>
+        <h2>For AI agents</h2>
+        <ul>
+          <li>API: <code>POST https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt</code> with <code>{"url": "https://example.com"}</code></li>
+          <li>Payment: 1 USDC on Base. The first call returns HTTP 402 with the address; retry with header <code>X-Payment: &lt;tx hash&gt;</code>.</li>
+          <li>Docs: <a href="/llms.txt">llms.txt</a>, <a href="/llms-full.txt">full guide</a>, <a href="/openapi.json">OpenAPI spec</a>, <a href="/.well-known/mcp.json">MCP server card</a></li>
+          <li>MCP server: <a href="https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp">rever-mcp</a> (tool <code>clone_ui</code>)</li>
+        </ul>
+        <p>Open source: <a href="https://github.com/chaoui-ahmed/rever-ui-cloner">github.com/chaoui-ahmed/rever-ui-cloner</a> · <a href="/terms">Terms</a></p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

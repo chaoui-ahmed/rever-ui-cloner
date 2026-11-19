@@ -1,0 +1,25 @@
+{
+  "name": "rever-ui-cloner",
+  "title": "Rever",
+  "description": "Turn a website URL into a prompt for recreating its UI with a code model.",
+  "version": "1.1.0",
+  "repository": "https://github.com/chaoui-ahmed/rever-ui-cloner",
+  "documentation": "https://www.aypiai.online/llms-full.txt",
+  "transport": ["stdio"],
+  "install": { "command": "npx", "args": ["-y", "github:chaoui-ahmed/rever-ui-cloner#path:rever-mcp"] },
+  "tools": [
+    {
+      "name": "clone_ui",
+      "description": "Generate a UI-recreation prompt from a public URL. Optional payment_tx: Base tx hash of a 1 USDC payment.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": { "type": "string" },
+          "payment_tx": { "type": "string" }
+        }
+      }
+    }
+  ],
+  "pricing": { "amount": "1", "currency": "USDC", "network": "base" }
+}
