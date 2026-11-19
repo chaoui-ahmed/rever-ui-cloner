@@ -1,27 +1,11 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { loadShowcase, type Site } from "@/data/showcase";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ExternalLink, Search, Globe, Loader2 } from "lucide-react";
 import SiteTimeMachine from "@/components/SiteTimeMachine";
-
-interface Site {
-  id: number;
-  domain: string;
-  platform: string;
-}
-
-// Fonction utilitaire pour mélanger un tableau (Fisher-Yates shuffle)
-const shuffleArray = <T,>(array: T[]): T[] => {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-};
 
 const Showcase = () => {
   const [sites, setSites] = useState<Site[]>([]);
@@ -36,17 +20,9 @@ const Showcase = () => {
   const fetchSites = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("discovered_sites")
-        .select("*"); // Plus de .order() pour l'aléatoire
-      
-      if (error) throw error;
-      if (data) {
-        // Randomisation immédiate des sites récupérés
-        setSites(shuffleArray(data));
-      }
+      setSites(await loadShowcase());
     } catch (err) {
-      console.error("Erreur lors de la récupération des sites:", err);
+      console.error("Failed to load showcase:", err);
     } finally {
       setLoading(false);
     }

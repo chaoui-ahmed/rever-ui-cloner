@@ -2,30 +2,58 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Rever UI-to-Prompt API",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "summary": "Turn a website URL into a prompt for recreating its UI.",
-    "description": "Takes a full-page screenshot of a public URL and returns a detailed design brief (layout, components, colors, typography, spacing) that a code-generation model can use to rebuild the UI in React + Tailwind. Humans authenticate with a Supabase user token and spend credits. Agents can pay 1 USDC on Base per call: call once to get a 402 with payment details, pay, then retry with the transaction hash in the X-Payment header. Full guide: https://www.aypiai.online/llms-full.txt",
-    "contact": { "name": "Ahmed Chaoui", "url": "https://github.com/chaoui-ahmed/rever-ui-cloner" },
-    "license": { "name": "MIT", "identifier": "MIT" }
+    "description": "Takes a full-page screenshot of a public URL and returns a detailed design brief (layout, components, colors, typography, spacing) that a code-generation model can use to rebuild the UI in React + Tailwind. Two ways to pay: agents send 1 USDC on Base per call (call once to get a 402 with payment details, pay, then retry with the transaction hash in X-Payment); humans buy a pack on the website and send its access key in X-Access-Key. Full guide: https://www.aypiai.online/llms-full.txt",
+    "contact": {
+      "name": "Ahmed Chaoui",
+      "url": "https://github.com/chaoui-ahmed/rever-ui-cloner"
+    },
+    "license": {
+      "name": "MIT",
+      "identifier": "MIT"
+    }
   },
-  "externalDocs": { "url": "https://www.aypiai.online/llms-full.txt" },
-  "servers": [{ "url": "https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1" }],
+  "externalDocs": {
+    "url": "https://www.aypiai.online/llms-full.txt"
+  },
+  "servers": [
+    {
+      "url": "https://www.aypiai.online/api"
+    }
+  ],
   "paths": {
     "/generate-prompt": {
       "post": {
         "operationId": "generateUiPrompt",
         "summary": "Generate a UI-recreation prompt from a URL",
         "description": "Use when a user wants to clone, copy or recreate the design of an existing website. Returns a text prompt (not code); pass it to a code model to generate the UI. Takes 10-30 seconds.",
-        "security": [{}, { "x402Payment": [] }, { "userToken": [] }],
+        "security": [
+          {
+            "x402Payment": []
+          },
+          {
+            "accessKey": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["url"],
+                "required": [
+                  "url"
+                ],
                 "properties": {
-                  "url": { "type": "string", "format": "uri", "description": "Public http(s) URL of the page to recreate.", "examples": ["https://stripe.com"] }
+                  "url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Public http(s) URL of the page to recreate.",
+                    "examples": [
+                      "https://stripe.com"
+                    ]
+                  }
                 }
               }
             }
@@ -39,59 +67,133 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "prompt": { "type": "string", "description": "Design brief to give to a code-generation model." },
-                    "url": { "type": "string" },
-                    "inputTokens": { "type": "integer" },
-                    "outputTokens": { "type": "integer" },
-                    "creditsRemaining": { "type": "integer", "description": "Only for human accounts." }
+                    "prompt": {
+                      "type": "string",
+                      "description": "Design brief to give to a code-generation model."
+                    },
+                    "url": {
+                      "type": "string"
+                    },
+                    "remaining": {
+                      "type": "integer",
+                      "description": "Generations left on the access key (access-key payments only)."
+                    }
                   }
                 }
               }
             }
           },
-          "400": { "description": "Missing or invalid URL." },
-          "401": { "description": "Invalid user token." },
+          "400": {
+            "description": "Missing or invalid URL."
+          },
+          "401": {
+            "description": "Invalid or unknown access key."
+          },
           "402": {
-            "description": "Payment required. Pay the amount in accepts[0] (USDC on Base) to payTo, then retry with header X-Payment set to the transaction hash.",
+            "description": "Payment required: no payment, unconfirmed/insufficient/reused transaction, or access key with no generations left. For USDC: pay accepts[0].maxAmountRequired of accepts[0].asset to accepts[0].payTo on Base, then retry with header X-Payment set to the transaction hash.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "error": { "type": "string" },
-                    "reason": { "type": "string" },
-                    "x402Version": { "type": "integer" },
+                    "error": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "x402Version": {
+                      "type": "integer"
+                    },
                     "accepts": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "scheme": { "type": "string" },
-                          "network": { "type": "string" },
-                          "chainId": { "type": "integer" },
-                          "asset": { "type": "string" },
-                          "maxAmountRequired": { "type": "string" },
-                          "payTo": { "type": "string" },
-                          "description": { "type": "string" }
+                          "scheme": {
+                            "type": "string"
+                          },
+                          "network": {
+                            "type": "string"
+                          },
+                          "chainId": {
+                            "type": "integer"
+                          },
+                          "asset": {
+                            "type": "string"
+                          },
+                          "maxAmountRequired": {
+                            "type": "string"
+                          },
+                          "payTo": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
                         }
                       }
                     },
-                    "howToPay": { "type": "string" }
+                    "howToPay": {
+                      "type": "string"
+                    }
                   }
                 }
               }
             }
           },
-          "403": { "description": "Human account without enough credits." },
-          "502": { "description": "Screenshot or model failed; agent payments are released and can be retried." }
+          "502": {
+            "description": "Screenshot or model failed. The payment or generation is released; retry with the same hash/key."
+          }
+        }
+      }
+    },
+    "/balance": {
+      "get": {
+        "operationId": "getBalance",
+        "summary": "Generations left on an access key",
+        "security": [
+          {
+            "accessKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "remaining": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid access key."
+          }
         }
       }
     }
   },
   "components": {
     "securitySchemes": {
-      "x402Payment": { "type": "apiKey", "in": "header", "name": "X-Payment", "description": "Base transaction hash of a 1 USDC transfer to the payTo address. Single use." },
-      "userToken": { "type": "http", "scheme": "bearer", "description": "Supabase user JWT from the web app." }
+      "x402Payment": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Payment",
+        "description": "Base transaction hash of a 1 USDC transfer to the payTo address. Single use."
+      },
+      "accessKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Access-Key",
+        "description": "Access key from a pack bought on https://www.aypiai.online (Stripe checkout session id, cs_...)."
+      }
     }
   }
 }

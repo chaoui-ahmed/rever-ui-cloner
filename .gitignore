@@ -26,3 +26,7 @@ dist-ssr
 # Local secrets — never commit
 .env
 .env.local
+
+# Cloudflare
+.wrangler
+.dev.vars

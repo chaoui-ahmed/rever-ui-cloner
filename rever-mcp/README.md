@@ -29,6 +29,6 @@ Each call costs 1 USDC on Base. The first call without payment returns the addre
 
 Optional environment variables:
 
-- `REVER_USER_TOKEN` — use your web-app account credits instead of paying per call
+- `REVER_ACCESS_KEY` — access key of a pack bought on aypiai.online, instead of paying per call
 - `REVER_PAYMENT_TX` — default payment hash
 - `REVER_API_URL` — override the endpoint

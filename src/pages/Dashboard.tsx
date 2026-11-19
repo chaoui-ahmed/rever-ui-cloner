@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -20,107 +18,60 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import reverLogo from "@/assets/rever-logo.png";
 import reverIcon from "@/assets/rever-icon.png";
-import UserMenu from "@/components/UserMenu";
-import SettingsDialog from "@/components/SettingsDialog";
+import BuyDialog from "@/components/BuyDialog";
+import { getAccessKey, setAccessKey as storeAccessKey, consumeSessionIdFromUrl, fetchBalance } from "@/lib/access";
+import { loadShowcase, type Site } from "@/data/showcase";
 import { LiquidMetalButton } from "@/components/liquid-metal-button";
 import SiteTimeMachine from "@/components/SiteTimeMachine";
 
-interface Site {
-  id: number;
-  domain: string;
-  platform: string;
-}
-
-// Fonction utilitaire pour mélanger un tableau (Fisher-Yates shuffle)
-const shuffleArray = <T,>(array: T[]): T[] => {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-};
-
 const Dashboard = () => {
-  const { user } = useAuth();
-  const [credits, setCredits] = useState<number | null>(null);
-  const [planName, setPlanName] = useState<string>("Free");
+  const [accessKey, setAccessKeyState] = useState<string | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
   const [url, setUrl] = useState("");
   const [generating, setGenerating] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isBuyOpen, setIsBuyOpen] = useState(false);
 
-  // États pour le Showcase
+  // Showcase state
   const [sites, setSites] = useState<Site[]>([]);
   const [showcaseFilter, setShowcaseFilter] = useState("all");
   const [showcaseSearch, setShowcaseSearch] = useState("");
   const [loadingShowcase, setLoadingShowcase] = useState(true);
 
-  const fetchProfile = async () => {
-    if (!user) return;
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("credits, plan_name")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Failed to fetch profile:", error);
-      toast.error("Failed to load your profile. Please try refreshing.");
-      return;
-    }
-    
-    if (data) {
-      setCredits(data.credits ?? 0);
-      setPlanName(data.plan_name ?? "Free");
+  const useKey = async (key: string, announce = false) => {
+    try {
+      const balance = await fetchBalance(key);
+      storeAccessKey(key);
+      setAccessKeyState(key);
+      setRemaining(balance);
+      if (announce) toast.success(`Payment confirmed: ${balance} generations available`);
+      setIsBuyOpen(false);
+    } catch (err: any) {
+      toast.error(err.message || "Invalid access key");
     }
   };
 
-  const fetchShowcaseSites = async () => {
-    setLoadingShowcase(true);
-    const { data } = await supabase
-      .from("discovered_sites")
-      .select("*"); 
-      
-    if (data) {
-      // On randomise l'ordre des sites récupérés
-      setSites(shuffleArray(data));
-    }
-    setLoadingShowcase(false);
+  const forgetKey = () => {
+    storeAccessKey(null);
+    setAccessKeyState(null);
+    setRemaining(null);
   };
 
   useEffect(() => {
-    if (!user) return;
-    fetchProfile();
-    fetchShowcaseSites();
+    const fromStripe = consumeSessionIdFromUrl();
+    const stored = getAccessKey();
+    if (fromStripe) useKey(fromStripe, true);
+    else if (stored) useKey(stored);
 
-    const channel = supabase
-      .channel("credits-realtime")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "profiles",
-          filter: `id=eq.${user.id}`,
-        },
-        (payload) => {
-          const newData = payload.new as { credits: number; plan_name: string };
-          setCredits(newData.credits ?? 0);
-          setPlanName(newData.plan_name ?? "Free");
-        }
-      )
-      .subscribe();
+    loadShowcase()
+      .then(setSites)
+      .catch(() => toast.error("Failed to load the showcase"))
+      .finally(() => setLoadingShowcase(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
-  // Must match MINIMUM_CREDITS_REQUIRED in supabase/functions/generate-prompt
-  const hasCredits = credits !== null && credits >= 100;
+  const hasCredits = accessKey !== null && remaining !== null && remaining > 0;
 
   const handleGenerate = async () => {
     let finalUrl = url.trim();
@@ -128,25 +79,26 @@ const Dashboard = () => {
       toast.error("Please enter a URL");
       return;
     }
-
-    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
-      finalUrl = 'https://' + finalUrl;
+    if (!finalUrl.startsWith("http://") && !finalUrl.startsWith("https://")) {
+      finalUrl = "https://" + finalUrl;
     }
-
-    if (!hasCredits) return;
+    if (!hasCredits || !accessKey) return;
 
     setGenerating(true);
     setGeneratedPrompt(null);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-prompt", {
-        body: { url: finalUrl },
+      const res = await fetch("/api/generate-prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Access-Key": accessKey },
+        body: JSON.stringify({ url: finalUrl }),
       });
-      
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      
+      const data = await res.json();
+      if (!res.ok) {
+        if (typeof data.remaining === "number") setRemaining(data.remaining);
+        throw new Error(data.error || "Failed to generate prompt");
+      }
       setGeneratedPrompt(data.prompt);
-      setCredits(data.creditsRemaining);
+      setRemaining(data.remaining);
       toast.success("Prompt generated!");
     } catch (err: any) {
       toast.error(err.message || "Failed to generate prompt");
@@ -155,16 +107,7 @@ const Dashboard = () => {
     }
   };
 
-  // Nouvelle fonction qui ouvre les paramètres pour s'abonner au lieu d'acheter des crédits à l'unité
-  const handleUpgrade = () => {
-    setIsSettingsOpen(true);
-  };
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await fetchProfile();
-    setRefreshing(false);
-  };
+  const handleUpgrade = () => setIsBuyOpen(true);
 
   const handleCopy = async () => {
     if (!generatedPrompt) return;
@@ -186,18 +129,15 @@ const Dashboard = () => {
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 h-20">
           <img src={reverLogo} alt="REVER" className="h-14 w-auto filter drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]" />
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                  planName === "Pro" || planName === "Pro+" ? "bg-amber-100 text-amber-800 ring-1 ring-amber-400/30" : "bg-muted text-muted-foreground"
-                }`}>
-                {planName}
-              </span>
-              <div className="flex items-center gap-1.5 rounded-full bg-secondary px-3.5 py-1.5 text-sm font-medium">
-                <Coins className="h-4 w-4 text-primary" />
-                <span className="text-foreground">{credits !== null ? credits : "—"}</span>
-              </div>
-            </div>
-            <UserMenu credits={credits} refreshing={refreshing} onRefreshCredits={handleRefresh} onOpenSettings={() => setIsSettingsOpen(true)} planName={planName} />
+            <a href="/showcase" className="text-sm text-muted-foreground hover:text-foreground hidden sm:inline">Showcase</a>
+            <button
+              onClick={() => setIsBuyOpen(true)}
+              className="flex items-center gap-1.5 rounded-full bg-secondary px-3.5 py-1.5 text-sm font-medium hover:bg-secondary/80"
+              aria-label="Generations left — buy more"
+            >
+              <Coins className="h-4 w-4 text-primary" />
+              <span className="text-foreground">{remaining !== null ? remaining : "Buy"}</span>
+            </button>
           </div>
         </div>
       </header>
@@ -245,7 +185,7 @@ const Dashboard = () => {
                 />
                 {!hasCredits && (
                   <p className="text-center text-sm text-muted-foreground mt-8">
-                    You're out of credits. <button onClick={handleUpgrade} className="text-primary underline hover:text-primary/80">Upgrade your plan</button> to get more.
+                    {accessKey ? "No generations left." : "Buy a pack to start."}{" "}<button onClick={handleUpgrade} className="text-primary underline hover:text-primary/80">See packs</button>
                   </p>
                 )}
               </div>
@@ -329,8 +269,7 @@ const Dashboard = () => {
         </Tabs>
       </main>
 
-      {/* Cette boîte de dialogue affichera désormais tes abonnements Starter, Pro, Pro+ */}
-      <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} credits={credits} planName={planName} />
+      <BuyDialog open={isBuyOpen} onOpenChange={setIsBuyOpen} accessKey={accessKey} onUseKey={(k) => useKey(k, true)} onForgetKey={forgetKey} />
     </div>
   );
 };

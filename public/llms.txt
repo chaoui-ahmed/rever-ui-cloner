@@ -2,7 +2,7 @@
 
 > Rever turns a website URL into a detailed, ready-to-paste prompt for recreating that site's UI with an AI code generator (Lovable, v0, Bolt, Claude, Cursor). It takes a full-page screenshot of the URL and has a vision model describe the layout, sections, components, colors, typography and spacing as build instructions. Use it when a user asks to clone, copy, rebuild or get inspired by an existing website's design.
 
-Humans use the web app with credits. AI agents can call the HTTP API directly and pay 1 USDC per request on Base (x402-style), or use the MCP server.
+No account needed. AI agents call the HTTP API and pay 1 USDC per request on Base (x402-style), or use the MCP server. People buy a pack of generations by card on the website and get an access key.
 
 ## What you get
 
@@ -14,14 +14,16 @@ Humans use the web app with credits. AI agents can call the HTTP API directly an
 ## API
 
 - [OpenAPI spec](https://www.aypiai.online/openapi.json): machine-readable description of the endpoint
-- Endpoint: `POST https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt` with body `{"url": "https://example.com"}`
+- Endpoint: `POST https://www.aypiai.online/api/generate-prompt` with body `{"url": "https://example.com"}`
 - [Full agent guide](https://www.aypiai.online/llms-full.txt): payment flow, errors, examples
 
 ## Payment for agents
 
 1. Call the endpoint without payment → HTTP 402 with an `accepts` array (network `base`, asset USDC `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, amount `1000000` = 1 USDC, `payTo` address).
 2. Send 1 USDC on Base to `payTo`.
-3. Retry the same request with header `X-Payment: <transaction hash>`. The hash is verified on-chain and can be used once. If generation fails, the hash is released and can be retried.
+3. Retry the same request with header `X-Payment: <transaction hash>`.
+
+With a pack bought on the website, send `X-Access-Key: cs_live_...` instead. The hash is verified on-chain and can be used once. If generation fails, the hash is released and can be retried.
 
 ## Tools
 
@@ -30,7 +32,7 @@ Humans use the web app with credits. AI agents can call the HTTP API directly an
 
 ## Optional
 
-- [Web app](https://www.aypiai.online/auth): sign in, 300 free credits on signup
-- [Showcase](https://www.aypiai.online/showcase): sites already cloned by users
+- [Web app](https://www.aypiai.online/): paste a URL, buy packs by card (10 generations for 9,99 €)
+- [Showcase](https://www.aypiai.online/showcase): directory of ~10,000 sites built with Vercel and Lovable ([JSON](https://www.aypiai.online/showcase.json))
 - [Source code](https://github.com/chaoui-ahmed/rever-ui-cloner)
 - [Terms](https://www.aypiai.online/terms)
