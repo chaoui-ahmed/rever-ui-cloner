@@ -1,0 +1,81 @@
+# Rever — full guide for AI agents
+
+Rever converts a website URL into a design brief: a detailed prompt describing the page's layout, sections, components, color palette, typography, spacing and interactions, written so that a code-generation model (Lovable, v0, Bolt, Claude, Cursor, GPT) can rebuild the UI in React + Tailwind.
+
+## When to use it
+
+- The user says "clone / copy / recreate / make something like <URL>".
+- The user wants a design spec or style breakdown of an existing site.
+- You want a compact description of a page's look instead of loading its whole HTML into context.
+
+When not to use it: extracting text/data from a page, sites behind a login, or when you need the site's exact original source code.
+
+## Endpoint
+
+POST https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt
+Content-Type: application/json
+
+Body:
+{"url": "https://stripe.com"}
+
+## Authentication
+
+Two options:
+1. Human account: `Authorization: Bearer <Supabase user JWT>` from the web app. Credits are deducted per call.
+2. Agent payment: no account needed. Pay 1 USDC on Base per call and send the transaction hash in `X-Payment`.
+
+## Agent payment flow
+
+Step 1 — request without payment:
+
+curl -X POST https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt \
+  -H "Content-Type: application/json" -d '{"url":"https://stripe.com"}'
+
+Response 402:
+{
+  "error": "Payment Required",
+  "x402Version": 1,
+  "accepts": [{
+    "scheme": "exact",
+    "network": "base",
+    "chainId": 8453,
+    "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "maxAmountRequired": "1000000",
+    "payTo": "0xb64b22c09d24921f1b4a5599941a27dbca61b542",
+    "description": "UI-to-prompt blueprint for one URL (1 USDC)"
+  }],
+  "howToPay": "..."
+}
+
+Step 2 — transfer 1 USDC (1000000 units, 6 decimals) on Base mainnet to `payTo`. Wait for 2 confirmations (a few seconds).
+
+Step 3 — retry with the transaction hash:
+
+curl -X POST https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt \
+  -H "Content-Type: application/json" \
+  -H "X-Payment: 0x<64 hex chars>" \
+  -d '{"url":"https://stripe.com"}'
+
+Response 200:
+{"prompt": "Build a landing page with ...", "url": "https://stripe.com/", "inputTokens": 1800, "outputTokens": 1200}
+
+Rules:
+- One transaction hash = one successful generation. Reusing it returns 402 with reason "already been used".
+- If the screenshot or model step fails, the payment is released and the same hash can be retried.
+- Only USDC transfers to `payTo` of at least 1 USDC in a successful transaction count.
+
+## Errors
+
+- 400 — missing/invalid URL (must be a public http(s) URL).
+- 401 — invalid user token.
+- 402 — payment missing, unconfirmed, insufficient or already used; `reason` explains which.
+- 403 — human account without enough credits.
+- 502 — screenshot or model failed (retry; agent payments are released).
+
+## MCP
+
+The `rever-mcp` package exposes one tool, `clone_ui(url, payment_tx?)`. See https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp
+
+## About
+
+Built by Ahmed Chaoui. Source: https://github.com/chaoui-ahmed/rever-ui-cloner (MIT).

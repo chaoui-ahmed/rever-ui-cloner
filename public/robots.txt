@@ -1,22 +1,41 @@
-# Standard crawlers
+# Rever — UI-to-prompt API. All crawlers and AI agents are welcome.
+# Agent docs: https://www.aypiai.online/llms.txt
+
 User-agent: *
 Allow: /
+Disallow: /dashboard
 
-# Explicitly welcome AI Agents & LLM Crawlers
+# Search & answer engines
+User-agent: Googlebot
+User-agent: Google-Extended
+User-agent: Bingbot
+User-agent: Applebot
+User-agent: Applebot-Extended
+User-agent: DuckDuckBot
+User-agent: DuckAssistBot
+User-agent: YandexBot
+# OpenAI
 User-agent: GPTBot
-Allow: /
+User-agent: OAI-SearchBot
 User-agent: ChatGPT-User
-Allow: /
-User-agent: Anthropic-ai
-Allow: /
-User-agent: Claude-Web
-Allow: /
+# Anthropic
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: anthropic-ai
+# Perplexity
 User-agent: PerplexityBot
+User-agent: Perplexity-User
+# Others
+User-agent: CCBot
+User-agent: Meta-ExternalAgent
+User-agent: Meta-ExternalFetcher
+User-agent: Amazonbot
+User-agent: MistralAI-User
+User-agent: cohere-ai
+User-agent: YouBot
+User-agent: Bytespider
 Allow: /
-User-agent: Omgili
-Allow: /
+Disallow: /dashboard
 
-# Direct AI Agents to their specific instruction files
-Allow: /.well-known/ai-plugin.json
-Allow: /openapi.json
-Allow: /llms.txt
+Sitemap: https://www.aypiai.online/sitemap.xml

@@ -1,11 +1,34 @@
-# Rever UI Cloner - MCP Server
+# Rever MCP server
 
-This is the official Model Context Protocol (MCP) server for **Rever UI Cloner**.
-Install this to give your local Claude Desktop app the superpower to instantly clone any website's UI into perfect React/Tailwind code without scraping HTML.
+Gives any MCP client (Claude Desktop, Cursor, Windsurf, …) a `clone_ui` tool: pass a URL, get back a detailed prompt describing the page's layout, components, colors and typography, ready to hand to a code model.
 
-## Installation
+## Install
 
-1. Clone or download this folder (`rever-mcp`).
-2. Open your terminal in this folder and run:
-   ```bash
-   npm install
+```bash
+git clone https://github.com/chaoui-ahmed/rever-ui-cloner.git
+cd rever-ui-cloner/rever-mcp
+npm install
+```
+
+Add it to your client config (Claude Desktop: `claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "rever": {
+      "command": "node",
+      "args": ["/absolute/path/to/rever-ui-cloner/rever-mcp/index.js"]
+    }
+  }
+}
+```
+
+## Paying
+
+Each call costs 1 USDC on Base. The first call without payment returns the address and amount. Pay, then call again with `payment_tx` set to the transaction hash (single use).
+
+Optional environment variables:
+
+- `REVER_USER_TOKEN` — use your web-app account credits instead of paying per call
+- `REVER_PAYMENT_TX` — default payment hash
+- `REVER_API_URL` — override the endpoint
