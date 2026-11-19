@@ -4,7 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
 const API_URL =
-  process.env.REVER_API_URL ?? "https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt";
+  process.env.REVER_API_URL ?? "https://www.aypiai.online/api/generate-prompt";
 
 const server = new Server({ name: "rever-ui-cloner", version: "1.1.0" }, { capabilities: { tools: {} } });
 
@@ -13,7 +13,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "clone_ui",
       description:
-        "Turn a public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model. Returns text, not code. Costs 1 USDC on Base: call once without payment_tx to get payment details, pay, then call again with payment_tx set to the transaction hash.",
+        "Turn a public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model. Returns text, not code. Costs 1 USDC on Base (or one generation from a pack if REVER_ACCESS_KEY is set): call once without payment_tx to get payment details, pay, then call again with payment_tx set to the transaction hash.",
       inputSchema: {
         type: "object",
         properties: {
@@ -33,7 +33,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const headers = { "Content-Type": "application/json" };
   const tx = payment_tx ?? process.env.REVER_PAYMENT_TX;
   if (tx) headers["X-Payment"] = tx;
-  if (process.env.REVER_USER_TOKEN) headers["Authorization"] = `Bearer ${process.env.REVER_USER_TOKEN}`;
+  if (process.env.REVER_ACCESS_KEY) headers["X-Access-Key"] = process.env.REVER_ACCESS_KEY;
 
   try {
     const response = await fetch(API_URL, { method: "POST", headers, body: JSON.stringify({ url }) });

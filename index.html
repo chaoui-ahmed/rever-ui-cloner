@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rever — Turn any website into a prompt to rebuild its UI</title>
-    <meta name="description" content="Paste a URL, get a detailed prompt to recreate that site's UI in Lovable, v0, Claude or Cursor. Web app for humans, pay-per-call API and MCP server for AI agents." />
+    <meta name="description" content="Paste a URL, get a detailed prompt to recreate that site's UI in Lovable, v0, Claude or Cursor. No account: buy a pack by card, or pay 1 USDC per call as an AI agent." />
     <meta name="author" content="Ahmed Chaoui" />
     <link rel="canonical" href="https://www.aypiai.online/" />
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
@@ -39,7 +39,7 @@
           "description": "Turns a website URL into a detailed prompt for recreating its UI with an AI code generator such as Lovable, v0, Claude or Cursor.",
           "author": { "@type": "Person", "name": "Ahmed Chaoui", "url": "https://ahmedchaoui.com" },
           "offers": [
-            { "@type": "Offer", "name": "Free credits on signup", "price": "0", "priceCurrency": "USD" },
+            { "@type": "Offer", "name": "Starter pack (10 generations)", "price": "9.99", "priceCurrency": "EUR" },
             { "@type": "Offer", "name": "Agent API call", "price": "1", "priceCurrency": "USD", "description": "1 USDC on Base per request" }
           ],
           "sameAs": ["https://github.com/chaoui-ahmed/rever-ui-cloner"]
@@ -84,11 +84,11 @@
         <h1>Rever: turn any website into a prompt to rebuild its UI</h1>
         <p>Paste a URL. Rever takes a full-page screenshot and writes a detailed prompt describing the layout, sections, components, colors, typography and spacing. Paste it into Lovable, v0, Bolt, Claude or Cursor to recreate the design in React + Tailwind.</p>
         <h2>For people</h2>
-        <p><a href="/auth">Sign in</a> and get free credits. Browse sites other users cloned in the <a href="/showcase">showcase</a>.</p>
+        <p>No account needed: paste a URL and buy a pack of generations by card (from 9,99 € for 10). Browse ~10,000 sites built with Vercel and Lovable in the <a href="/showcase">showcase</a>.</p>
         <h2>For AI agents</h2>
         <ul>
-          <li>API: <code>POST https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt</code> with <code>{"url": "https://example.com"}</code></li>
-          <li>Payment: 1 USDC on Base. The first call returns HTTP 402 with the address; retry with header <code>X-Payment: &lt;tx hash&gt;</code>.</li>
+          <li>API: <code>POST https://www.aypiai.online/api/generate-prompt</code> with <code>{"url": "https://example.com"}</code></li>
+          <li>Payment: 1 USDC on Base. The first call returns HTTP 402 with the address; retry with header <code>X-Payment: &lt;tx hash&gt;</code>. Or use a pack key in <code>X-Access-Key</code>.</li>
           <li>Docs: <a href="/llms.txt">llms.txt</a>, <a href="/llms-full.txt">full guide</a>, <a href="/openapi.json">OpenAPI spec</a>, <a href="/.well-known/mcp.json">MCP server card</a></li>
           <li>MCP server: <a href="https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp">rever-mcp</a> (tool <code>clone_ui</code>)</li>
         </ul>

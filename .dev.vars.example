@@ -1,0 +1,9 @@
+# Local secrets for `npx wrangler pages dev dist`. Copy to .dev.vars (never commit it).
+# In production, set these in Cloudflare: Pages project → Settings → Variables and Secrets.
+SCREENSHOT_API_KEY=
+ANTHROPIC_API_KEY=
+STRIPE_SECRET_KEY=
+# Optional
+AGENT_PAYMENT_ADDRESS=0xB64b22C09d24921f1b4a5599941a27dbCA61b542
+BASE_RPC_URL=https://mainnet.base.org
+PACKS={"999":10,"1999":15,"4999":50}

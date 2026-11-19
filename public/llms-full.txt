@@ -12,7 +12,7 @@ When not to use it: extracting text/data from a page, sites behind a login, or w
 
 ## Endpoint
 
-POST https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt
+POST https://www.aypiai.online/api/generate-prompt
 Content-Type: application/json
 
 Body:
@@ -20,15 +20,15 @@ Body:
 
 ## Authentication
 
-Two options:
-1. Human account: `Authorization: Bearer <Supabase user JWT>` from the web app. Credits are deducted per call.
-2. Agent payment: no account needed. Pay 1 USDC on Base per call and send the transaction hash in `X-Payment`.
+No accounts. Two ways to pay:
+1. Agent payment: pay 1 USDC on Base per call and send the transaction hash in `X-Payment`.
+2. Access key: a person buys a pack of generations on https://www.aypiai.online (card, via Stripe) and gets an access key (`cs_live_...`). Send it in `X-Access-Key`. Check what's left with `GET /api/balance` (same header).
 
 ## Agent payment flow
 
 Step 1 — request without payment:
 
-curl -X POST https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt \
+curl -X POST https://www.aypiai.online/api/generate-prompt \
   -H "Content-Type: application/json" -d '{"url":"https://stripe.com"}'
 
 Response 402:
@@ -51,13 +51,13 @@ Step 2 — transfer 1 USDC (1000000 units, 6 decimals) on Base mainnet to `payTo
 
 Step 3 — retry with the transaction hash:
 
-curl -X POST https://nrzwlorjbcmfuikzrwoq.supabase.co/functions/v1/generate-prompt \
+curl -X POST https://www.aypiai.online/api/generate-prompt \
   -H "Content-Type: application/json" \
   -H "X-Payment: 0x<64 hex chars>" \
   -d '{"url":"https://stripe.com"}'
 
 Response 200:
-{"prompt": "Build a landing page with ...", "url": "https://stripe.com/", "inputTokens": 1800, "outputTokens": 1200}
+{"prompt": "Build a landing page with ...", "url": "https://stripe.com/"}
 
 Rules:
 - One transaction hash = one successful generation. Reusing it returns 402 with reason "already been used".
@@ -67,14 +67,13 @@ Rules:
 ## Errors
 
 - 400 — missing/invalid URL (must be a public http(s) URL).
-- 401 — invalid user token.
-- 402 — payment missing, unconfirmed, insufficient or already used; `reason` explains which.
-- 403 — human account without enough credits.
-- 502 — screenshot or model failed (retry; agent payments are released).
+- 401 — invalid or unknown access key.
+- 402 — payment missing, unconfirmed, insufficient or already used (`reason` explains which), or access key with no generations left.
+- 502 — screenshot or model failed. Retry: the payment or generation is released.
 
 ## MCP
 
-The `rever-mcp` package exposes one tool, `clone_ui(url, payment_tx?)`. See https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp
+The `rever-mcp` package exposes one tool, `clone_ui(url, payment_tx?)` (or set `REVER_ACCESS_KEY` to use a pack). See https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp
 
 ## About
 

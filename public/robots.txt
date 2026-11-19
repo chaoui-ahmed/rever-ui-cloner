@@ -3,7 +3,7 @@
 
 User-agent: *
 Allow: /
-Disallow: /dashboard
+Disallow: /api/
 
 # Search & answer engines
 User-agent: Googlebot
@@ -36,6 +36,6 @@ User-agent: cohere-ai
 User-agent: YouBot
 User-agent: Bytespider
 Allow: /
-Disallow: /dashboard
+Disallow: /api/
 
 Sitemap: https://www.aypiai.online/sitemap.xml
