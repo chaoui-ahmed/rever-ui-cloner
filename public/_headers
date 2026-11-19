@@ -1,0 +1,24 @@
+# Cloudflare Pages headers
+# (No _redirects needed: without a 404.html, Pages serves index.html for unknown routes — SPA mode.)
+
+/
+  Link: </llms.txt>; rel="alternate"; type="text/plain", </openapi.json>; rel="service-desc"; type="application/json"
+
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/llms-full.txt
+  Content-Type: text/plain; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/openapi.json
+  Content-Type: application/json; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/.well-known/*
+  Content-Type: application/json; charset=utf-8
+  Access-Control-Allow-Origin: *
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
