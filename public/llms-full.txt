@@ -65,7 +65,9 @@ A person buys a pack of generations by card on https://www.aypiai.online and get
 
 ## MCP
 
-The `rever-mcp` package exposes one tool, `clone_ui(url, payment_tx?)` (or set `REVER_ACCESS_KEY` to use a pack). See https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp
+Remote MCP server (Streamable HTTP, no install): https://www.aypiai.online/mcp, tool `clone_ui(url, access_key?, payment_tx?)`.
+
+The local `rever-mcp` package exposes the same tool, `clone_ui(url, payment_tx?)` (or set `REVER_ACCESS_KEY` to use a pack). See https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp
 
 ## About
 

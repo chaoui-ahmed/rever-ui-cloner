@@ -6,6 +6,7 @@
   "repository": "https://github.com/chaoui-ahmed/rever-ui-cloner",
   "documentation": "https://www.aypiai.online/llms-full.txt",
   "transport": [
+    "streamable-http",
     "stdio"
   ],
   "install": {
@@ -18,7 +19,7 @@
   "tools": [
     {
       "name": "clone_ui",
-      "description": "Generate a UI-recreation prompt from a public URL. Optional payment_tx: Base tx hash of a 0.25 USDC payment.",
+      "description": "Generate a UI-recreation prompt from a public URL ($0.25). Pay with access_key (pack) or payment_tx (Base tx hash of a 0.25 USDC payment).",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -30,6 +31,9 @@
           },
           "payment_tx": {
             "type": "string"
+          },
+          "access_key": {
+            "type": "string"
           }
         }
       }
@@ -40,5 +44,11 @@
     "currency": "USDC",
     "network": "base",
     "protocol": "x402"
-  }
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://www.aypiai.online/mcp"
+    }
+  ]
 }

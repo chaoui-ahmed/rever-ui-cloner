@@ -27,7 +27,8 @@ Other ways to pay: send 0.25 USDC on Base to the `payTo` address and retry with 
 
 ## Tools
 
-- [MCP server](https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp): `clone_ui` tool for Claude Desktop, Cursor and other MCP clients
+- Remote MCP server: `https://www.aypiai.online/mcp` (Streamable HTTP, tool `clone_ui`)
+- [Local MCP server](https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp): same tool over stdio
 - [MCP server card](https://www.aypiai.online/.well-known/mcp.json)
 
 ## Optional

@@ -12,7 +12,7 @@ Rever takes a full-page screenshot of the URL and has Claude Haiku describe the 
 |---|---|---|
 | People | Web app at [aypiai.online](https://www.aypiai.online), no account | Card via Stripe: 10 / 25 / 70 generations for 9,99 / 19,99 / 49,99 € |
 | AI agents | `POST /api/generate-prompt` (x402) | $0.25 in USDC on Base per call |
-| MCP clients | [`rever-mcp`](./rever-mcp) (`clone_ui` tool) | $0.25 in USDC on Base, or a pack's access key |
+| MCP clients | `https://www.aypiai.online/mcp` (remote) or [`rever-mcp`](./rever-mcp) (local), tool `clone_ui` | $0.25 in USDC on Base, or a pack's access key |
 
 ### Agent payment flow (x402)
 
