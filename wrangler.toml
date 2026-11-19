@@ -5,4 +5,4 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "rever"
-database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
+database_id = "ee5daf9e-d716-4efc-a4ec-1158a3e9cfa9"

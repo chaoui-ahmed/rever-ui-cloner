@@ -7,6 +7,6 @@
   "auth": { "type": "none" },
   "api": { "type": "openapi", "url": "https://www.aypiai.online/openapi.json" },
   "logo_url": "https://www.aypiai.online/favicon.ico",
-  "contact_email": "tahachaoui5@google.com",
+  "contact_email": "tahachaoui5@gmail.com",
   "legal_info_url": "https://www.aypiai.online/terms"
 }
