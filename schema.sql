@@ -19,3 +19,14 @@ CREATE TABLE IF NOT EXISTS agent_payments (
   created_at   TEXT NOT NULL DEFAULT (datetime('now')),
   consumed_at  TEXT
 );
+
+-- Crawler / AI agent visits (filled by functions/_middleware.ts)
+CREATE TABLE IF NOT EXISTS bot_visits (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  bot        TEXT NOT NULL,
+  path       TEXT NOT NULL,
+  status     INTEGER NOT NULL,
+  user_agent TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS bot_visits_created ON bot_visits (created_at);
