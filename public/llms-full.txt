@@ -41,7 +41,7 @@ Response 402:
     "chainId": 8453,
     "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
     "maxAmountRequired": "1000000",
-    "payTo": "0xb64b22c09d24921f1b4a5599941a27dbca61b542",
+    "payTo": "0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d",
     "description": "UI-to-prompt blueprint for one URL (1 USDC)"
   }],
   "howToPay": "..."

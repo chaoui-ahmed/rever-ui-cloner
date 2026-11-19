@@ -29,7 +29,7 @@ export const json = (body: unknown, status = 200, extra: Record<string, string> 
 export const AGENT_PRICE_USDC = 1;
 export const AGENT_PRICE_UNITS = BigInt(AGENT_PRICE_USDC) * 1_000_000n; // USDC has 6 decimals
 export const USDC_BASE = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
-const DEFAULT_PAY_TO = "0xB64b22C09d24921f1b4a5599941a27dbCA61b542";
+const DEFAULT_PAY_TO = "0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d";
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 const MIN_CONFIRMATIONS = 2n;
 
