@@ -3,8 +3,8 @@ const STORAGE_KEY = "rever_access_key";
 
 export const STRIPE_PACKS = [
   { id: "starter", name: "Starter", generations: 10, price: "9,99 €", url: "https://buy.stripe.com/aFaeVc2Regul0Ei1PSawo02" },
-  { id: "pro", name: "Pro", generations: 15, price: "19,99 €", url: "https://buy.stripe.com/3cI7sKbnKgul3Qu668awo03" },
-  { id: "pro_plus", name: "Pro+", generations: 50, price: "49,99 €", url: "https://buy.stripe.com/4gM4gy2Re7XPbiW1PSawo04" },
+  { id: "pro", name: "Pro", generations: 25, price: "19,99 €", url: "https://buy.stripe.com/3cI7sKbnKgul3Qu668awo03" },
+  { id: "pro_plus", name: "Pro+", generations: 70, price: "49,99 €", url: "https://buy.stripe.com/4gM4gy2Re7XPbiW1PSawo04" },
 ] as const;
 
 export function getAccessKey(): string | null {

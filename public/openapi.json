@@ -2,9 +2,9 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Rever UI-to-Prompt API",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "summary": "Turn a website URL into a prompt for recreating its UI.",
-    "description": "Takes a full-page screenshot of a public URL and returns a detailed design brief (layout, components, colors, typography, spacing) that a code-generation model can use to rebuild the UI in React + Tailwind. Two ways to pay: agents send 1 USDC on Base per call (call once to get a 402 with payment details, pay, then retry with the transaction hash in X-Payment); humans buy a pack on the website and send its access key in X-Access-Key. Full guide: https://www.aypiai.online/llms-full.txt",
+    "description": "Takes a screenshot of a public URL and returns a detailed design brief (layout, components, colors, typography, spacing) that a code-generation model can use to rebuild the UI in React + Tailwind. Price $0.25 per successful call. Agents pay with x402 v2 (exact scheme, USDC on Base eip155:8453): the first call returns 402 with a PAYMENT-REQUIRED header; retry with PAYMENT-SIGNATURE. Also accepted: X-Payment with the hash of a direct USDC transfer, or X-Access-Key from a pack bought on the website. Full guide: https://www.aypiai.online/llms-full.txt",
     "contact": {
       "name": "Ahmed Chaoui",
       "url": "https://github.com/chaoui-ahmed/rever-ui-cloner"
@@ -29,6 +29,9 @@
         "summary": "Generate a UI-recreation prompt from a URL",
         "description": "Use when a user wants to clone, copy or recreate the design of an existing website. Returns a text prompt (not code); pass it to a code model to generate the UI. Takes 10-30 seconds.",
         "security": [
+          {
+            "x402": []
+          },
           {
             "x402Payment": []
           },
@@ -81,6 +84,14 @@
                   }
                 }
               }
+            },
+            "headers": {
+              "PAYMENT-RESPONSE": {
+                "description": "x402 settlement receipt (base64 JSON), on x402 payments.",
+                "schema": {
+                  "type": "string"
+                }
+              }
             }
           },
           "400": {
@@ -90,7 +101,7 @@
             "description": "Invalid or unknown access key."
           },
           "402": {
-            "description": "Payment required: no payment, unconfirmed/insufficient/reused transaction, or access key with no generations left. For USDC: pay accepts[0].maxAmountRequired of accepts[0].asset to accepts[0].payTo on Base, then retry with header X-Payment set to the transaction hash.",
+            "description": "Payment required or rejected. x402: decode the base64 JSON PAYMENT-REQUIRED header (accepts: scheme exact, network eip155:8453, asset USDC, amount 250000, payTo) and retry with PAYMENT-SIGNATURE.",
             "content": {
               "application/json": {
                 "schema": {
@@ -182,11 +193,17 @@
   },
   "components": {
     "securitySchemes": {
+      "x402": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "PAYMENT-SIGNATURE",
+        "description": "x402 v2 payment payload (base64 JSON, exact scheme, USDC on Base). Use any x402 client."
+      },
       "x402Payment": {
         "type": "apiKey",
         "in": "header",
         "name": "X-Payment",
-        "description": "Base transaction hash of a 1 USDC transfer to the payTo address. Single use."
+        "description": "Base transaction hash of a direct 0.25 USDC transfer to the payTo address. Single use."
       },
       "accessKey": {
         "type": "apiKey",
@@ -195,5 +212,13 @@
         "description": "Access key from a pack bought on https://www.aypiai.online (Stripe checkout session id, cs_...)."
       }
     }
+  },
+  "x-payment-info": {
+    "protocol": "x402",
+    "version": 2,
+    "scheme": "exact",
+    "network": "eip155:8453",
+    "asset": "USDC",
+    "price": "0.25"
   }
 }

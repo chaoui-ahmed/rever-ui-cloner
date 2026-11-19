@@ -2,6 +2,13 @@ import {
   type Env, json, corsHeaders, paymentRequired, verifyUsdcPayment, redeemAccessKey,
   validateTargetUrl, arrayBufferToBase64, AGENT_PRICE_UNITS, USDC_BASE,
 } from "../_shared";
+import { withX402, x402Enabled } from "../_x402";
+
+const withCors = (res: Response) => {
+  const out = new Response(res.body, res);
+  for (const [k, v] of Object.entries(corsHeaders)) out.headers.set(k, v);
+  return out;
+};
 
 const SYSTEM_PROMPT =
   "You are an expert UI/UX reverse-engineer. Given a screenshot of a website, produce a detailed, actionable prompt that a developer could paste into Lovable or v0 to recreate the UI faithfully. Return ONLY the prompt text.";
@@ -51,7 +58,9 @@ export const onRequestOptions: PagesFunction<Env> = () => new Response(null, { h
 export const onRequestGet: PagesFunction<Env> = () =>
   json({ error: "Use POST with JSON body {\"url\": \"https://...\"}. Docs: https://www.aypiai.online/llms.txt" }, 405);
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestPost: PagesFunction<Env> = async (ctx) => withCors(await handlePost(ctx));
+
+const handlePost: PagesFunction<Env> = async ({ request, env }) => {
   let body: { url?: unknown };
   try {
     body = await request.json();
@@ -85,7 +94,20 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     }
   }
 
-  // ---- Agent paying in USDC ----
+  // ---- Agent paying with standard x402 (signed payload, settled by the facilitator) ----
+  const isTxHash = !!txHash && /^0x[0-9a-f]{64}$/.test(txHash);
+  if (!isTxHash && x402Enabled(env)) {
+    const x402Response = await withX402(env, request, body, async () => {
+      try {
+        return json({ prompt: await generate(env, url), url });
+      } catch (err) {
+        return json({ error: (err as Error).message }, err instanceof UpstreamError ? 502 : 500);
+      }
+    });
+    if (x402Response) return x402Response;
+  }
+
+  // ---- Agent paying by direct USDC transfer + tx hash (fallback) ----
   if (!txHash) return paymentRequired(env, resource);
 
   const check = await verifyUsdcPayment(env, txHash);

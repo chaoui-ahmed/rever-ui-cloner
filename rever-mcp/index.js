@@ -13,12 +13,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "clone_ui",
       description:
-        "Turn a public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model. Returns text, not code. Costs 1 USDC on Base (or one generation from a pack if REVER_ACCESS_KEY is set): call once without payment_tx to get payment details, pay, then call again with payment_tx set to the transaction hash.",
+        "Turn a public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model. Returns text, not code. Costs $0.25 in USDC on Base (or one generation from a pack if REVER_ACCESS_KEY is set): call once without payment_tx to get payment details, pay, then call again with payment_tx set to the transaction hash.",
       inputSchema: {
         type: "object",
         properties: {
           url: { type: "string", description: "Public http(s) URL to recreate, e.g. https://stripe.com" },
-          payment_tx: { type: "string", description: "Base transaction hash of a 1 USDC payment (single use)." },
+          payment_tx: { type: "string", description: "Base transaction hash of a 0.25 USDC payment (single use)." },
         },
         required: ["url"],
       },
@@ -46,7 +46,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         content: [{
           type: "text",
           text:
-            `Payment required${data.reason ? ` (${data.reason})` : ""}. Send ${Number(a.maxAmountRequired ?? 1e6) / 1e6} USDC on Base ` +
+            `Payment required${data.reason ? ` (${data.reason})` : ""}. Send ${Number(a.maxAmountRequired ?? a.amount ?? 250000) / 1e6} USDC on Base ` +
             `(asset ${a.asset}) to ${a.payTo}, then call clone_ui again with payment_tx set to the transaction hash.`,
         }],
       };

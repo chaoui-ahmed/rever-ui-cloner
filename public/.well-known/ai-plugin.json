@@ -3,7 +3,7 @@
   "name_for_human": "Rever",
   "name_for_model": "rever_ui_prompt",
   "description_for_human": "Turn any website URL into a prompt for recreating its UI.",
-  "description_for_model": "Given a public website URL, returns a detailed design brief (layout, components, colors, typography, spacing) for recreating that UI with a code model. Use when the user wants to clone or copy the design of an existing site. Output is a text prompt, not code. Costs 1 USDC on Base per call for agents (402 then retry with X-Payment tx hash).",
+  "description_for_model": "Given a public website URL, returns a detailed design brief (layout, components, colors, typography, spacing) for recreating that UI with a code model. Use when the user wants to clone or copy the design of an existing site. Output is a text prompt, not code. Costs $0.25 per call in USDC on Base via x402 (402 with PAYMENT-REQUIRED header, retry with PAYMENT-SIGNATURE).",
   "auth": { "type": "none" },
   "api": { "type": "openapi", "url": "https://www.aypiai.online/openapi.json" },
   "logo_url": "https://www.aypiai.online/favicon.ico",

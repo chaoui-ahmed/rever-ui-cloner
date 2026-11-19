@@ -1,29 +1,29 @@
 # Rever
 
-> Rever turns a website URL into a detailed, ready-to-paste prompt for recreating that site's UI with an AI code generator (Lovable, v0, Bolt, Claude, Cursor). It takes a full-page screenshot of the URL and has a vision model describe the layout, sections, components, colors, typography and spacing as build instructions. Use it when a user asks to clone, copy, rebuild or get inspired by an existing website's design.
+> Rever turns a website URL into a detailed, ready-to-paste prompt for recreating that site's UI with an AI code generator (Lovable, v0, Bolt, Claude, Cursor). It screenshots the page and has a vision model describe the layout, sections, components, colors, typography and spacing as build instructions. Use it when a user asks to clone, copy, rebuild or get inspired by an existing website's design.
 
-No account needed. AI agents call the HTTP API and pay 1 USDC per request on Base (x402-style), or use the MCP server. People buy a pack of generations by card on the website and get an access key.
+No account needed. AI agents pay $0.25 per request in USDC on Base with the standard x402 protocol: any x402 client (e.g. `@x402/fetch`, Coinbase AgentKit) pays automatically. People buy a pack of generations by card on the website.
 
 ## What you get
 
 - Input: one public `http(s)` URL.
-- Output: JSON `{ "prompt": "...", "url": "..." }` — a plain-text design brief (not code). Feed it to a code model to generate React + Tailwind.
-- Typical latency: 10–30 s (screenshot + model).
-- Limits: renders what a normal browser sees after load; pages behind logins or heavy bot protection may fail.
+- Output: JSON `{ "prompt": "...", "url": "..." }`, a plain-text design brief (not code). Feed it to a code model to generate React + Tailwind.
+- Typical latency: 10–30 s.
+- Limits: renders what a normal browser sees after load (top 1280×3200 px); pages behind logins or heavy bot protection may fail. You are only charged when a prompt is returned.
 
 ## API
 
-- [OpenAPI spec](https://www.aypiai.online/openapi.json): machine-readable description of the endpoint
 - Endpoint: `POST https://www.aypiai.online/api/generate-prompt` with body `{"url": "https://example.com"}`
-- [Full agent guide](https://www.aypiai.online/llms-full.txt): payment flow, errors, examples
+- [OpenAPI spec](https://www.aypiai.online/openapi.json)
+- [Full agent guide](https://www.aypiai.online/llms-full.txt): payment options, errors, examples
 
-## Payment for agents
+## Payment (x402)
 
-1. Call the endpoint without payment → HTTP 402 with an `accepts` array (network `base`, asset USDC `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, amount `1000000` = 1 USDC, `payTo` address).
-2. Send 1 USDC on Base to `payTo`.
-3. Retry the same request with header `X-Payment: <transaction hash>`.
+1. Call the endpoint without payment → HTTP 402 with a `PAYMENT-REQUIRED` header (x402 v2): scheme `exact`, network `eip155:8453` (Base), asset USDC, amount `250000` ($0.25).
+2. Your x402 client signs a USDC authorization (gasless for you) and retries with the `PAYMENT-SIGNATURE` header.
+3. You get the prompt, plus a `PAYMENT-RESPONSE` header with the settlement receipt.
 
-With a pack bought on the website, send `X-Access-Key: cs_live_...` instead. The hash is verified on-chain and can be used once. If generation fails, the hash is released and can be retried.
+Other ways to pay: send 0.25 USDC on Base to the `payTo` address and retry with `X-Payment: <transaction hash>`, or use a pack key in `X-Access-Key`.
 
 ## Tools
 

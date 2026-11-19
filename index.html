@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rever — Turn any website into a prompt to rebuild its UI</title>
-    <meta name="description" content="Paste a URL, get a detailed prompt to recreate that site's UI in Lovable, v0, Claude or Cursor. No account: buy a pack by card, or pay 1 USDC per call as an AI agent." />
+    <meta name="description" content="Paste a URL, get a detailed prompt to recreate that site's UI in Lovable, v0, Claude or Cursor. No account: buy a pack by card, or pay $0.25 per call with x402 as an AI agent." />
     <meta name="author" content="Ahmed Chaoui" />
     <link rel="canonical" href="https://www.aypiai.online/" />
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
@@ -40,14 +40,14 @@
           "author": { "@type": "Person", "name": "Ahmed Chaoui", "url": "https://ahmedchaoui.com" },
           "offers": [
             { "@type": "Offer", "name": "Starter pack (10 generations)", "price": "9.99", "priceCurrency": "EUR" },
-            { "@type": "Offer", "name": "Agent API call", "price": "1", "priceCurrency": "USD", "description": "1 USDC on Base per request" }
+            { "@type": "Offer", "name": "Agent API call", "price": "0.25", "priceCurrency": "USD", "description": "$0.25 in USDC on Base per request, via x402" }
           ],
           "sameAs": ["https://github.com/chaoui-ahmed/rever-ui-cloner"]
         },
         {
           "@type": "WebAPI",
           "name": "Rever UI-to-Prompt API",
-          "description": "POST a URL, receive a UI-recreation prompt. Agents pay 1 USDC on Base per call (HTTP 402, then retry with X-Payment tx hash).",
+          "description": "POST a URL, receive a UI-recreation prompt. Agents pay $0.25 in USDC on Base per call with the x402 protocol (HTTP 402 with PAYMENT-REQUIRED, retry with PAYMENT-SIGNATURE).",
           "documentation": "https://www.aypiai.online/llms-full.txt",
           "termsOfService": "https://www.aypiai.online/terms",
           "provider": { "@id": "https://www.aypiai.online/#app" }
@@ -63,7 +63,7 @@
             {
               "@type": "Question",
               "name": "Can an AI agent use Rever without an account?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Yes. POST {\"url\": ...} to the API. It returns HTTP 402 with payment details; send 1 USDC on Base to the given address and retry with the transaction hash in the X-Payment header. There is also an MCP server with a clone_ui tool." }
+              "acceptedAnswer": { "@type": "Answer", "text": "Yes. POST {\"url\": ...} to the API. It returns HTTP 402 with x402 payment details; any x402 client pays $0.25 in USDC on Base automatically and gets the prompt. There is also an MCP server with a clone_ui tool." }
             },
             {
               "@type": "Question",
@@ -88,7 +88,7 @@
         <h2>For AI agents</h2>
         <ul>
           <li>API: <code>POST https://www.aypiai.online/api/generate-prompt</code> with <code>{"url": "https://example.com"}</code></li>
-          <li>Payment: 1 USDC on Base. The first call returns HTTP 402 with the address; retry with header <code>X-Payment: &lt;tx hash&gt;</code>. Or use a pack key in <code>X-Access-Key</code>.</li>
+          <li>Payment: $0.25 per call in USDC on Base with the x402 protocol. Any x402 client (e.g. <code>@x402/fetch</code>) pays automatically. Or use a pack key in <code>X-Access-Key</code>.</li>
           <li>Docs: <a href="/llms.txt">llms.txt</a>, <a href="/llms-full.txt">full guide</a>, <a href="/openapi.json">OpenAPI spec</a>, <a href="/.well-known/mcp.json">MCP server card</a></li>
           <li>MCP server: <a href="https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp">rever-mcp</a> (tool <code>clone_ui</code>)</li>
         </ul>

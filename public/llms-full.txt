@@ -15,61 +15,53 @@ When not to use it: extracting text/data from a page, sites behind a login, or w
 POST https://www.aypiai.online/api/generate-prompt
 Content-Type: application/json
 
-Body:
 {"url": "https://stripe.com"}
-
-## Authentication
-
-No accounts. Two ways to pay:
-1. Agent payment: pay 1 USDC on Base per call and send the transaction hash in `X-Payment`.
-2. Access key: a person buys a pack of generations on https://www.aypiai.online (card, via Stripe) and gets an access key (`cs_live_...`). Send it in `X-Access-Key`. Check what's left with `GET /api/balance` (same header).
-
-## Agent payment flow
-
-Step 1 — request without payment:
-
-curl -X POST https://www.aypiai.online/api/generate-prompt \
-  -H "Content-Type: application/json" -d '{"url":"https://stripe.com"}'
-
-Response 402:
-{
-  "error": "Payment Required",
-  "x402Version": 1,
-  "accepts": [{
-    "scheme": "exact",
-    "network": "base",
-    "chainId": 8453,
-    "asset": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-    "maxAmountRequired": "1000000",
-    "payTo": "0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d",
-    "description": "UI-to-prompt blueprint for one URL (1 USDC)"
-  }],
-  "howToPay": "..."
-}
-
-Step 2 — transfer 1 USDC (1000000 units, 6 decimals) on Base mainnet to `payTo`. Wait for 2 confirmations (a few seconds).
-
-Step 3 — retry with the transaction hash:
-
-curl -X POST https://www.aypiai.online/api/generate-prompt \
-  -H "Content-Type: application/json" \
-  -H "X-Payment: 0x<64 hex chars>" \
-  -d '{"url":"https://stripe.com"}'
 
 Response 200:
 {"prompt": "Build a landing page with ...", "url": "https://stripe.com/"}
 
-Rules:
-- One transaction hash = one successful generation. Reusing it returns 402 with reason "already been used".
-- If the screenshot or model step fails, the payment is released and the same hash can be retried.
-- Only USDC transfers to `payTo` of at least 1 USDC in a successful transaction count.
+Price: $0.25 per successful call. You are not charged if the screenshot or model step fails.
+
+## Option 1 — x402 (recommended, automatic)
+
+Rever implements x402 v2 with the `exact` scheme on Base mainnet (`eip155:8453`), USDC asset `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, amount `250000` (6 decimals = $0.25).
+
+With an x402 client, payment is automatic:
+
+    import { wrapFetchWithPayment, x402Client } from "@x402/fetch";
+    import { registerExactEvmScheme } from "@x402/evm/exact/client";
+    import { privateKeyToAccount } from "viem/accounts";
+
+    const client = new x402Client();
+    registerExactEvmScheme(client, { signer: privateKeyToAccount(process.env.PRIVATE_KEY) });
+    const pay = wrapFetchWithPayment(fetch, client);
+
+    const res = await pay("https://www.aypiai.online/api/generate-prompt", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ url: "https://stripe.com" }),
+    });
+    const { prompt } = await res.json();
+
+Manually: the first call returns 402 with a base64 JSON `PAYMENT-REQUIRED` header listing `accepts`. Sign an EIP-3009 `transferWithAuthorization` for the amount to `payTo`, send it base64-encoded in `PAYMENT-SIGNATURE` (legacy `X-PAYMENT` also accepted), and read the receipt in `PAYMENT-RESPONSE`. The payment is settled only after the prompt is generated. You need no ETH for gas.
+
+## Option 2 — direct USDC transfer
+
+1. Send at least 0.25 USDC on Base to 0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d and wait ~2 confirmations.
+2. Call the endpoint with header `X-Payment: <transaction hash>`.
+
+Each hash can be used once. If generation fails, the hash is released and can be retried.
+
+## Option 3 — access key (packs bought by card)
+
+A person buys a pack of generations by card on https://www.aypiai.online and gets an access key (`cs_live_...`). Send it in `X-Access-Key`. Check what's left with `GET /api/balance` (same header).
 
 ## Errors
 
-- 400 — missing/invalid URL (must be a public http(s) URL).
-- 401 — invalid or unknown access key.
-- 402 — payment missing, unconfirmed, insufficient or already used (`reason` explains which), or access key with no generations left.
-- 502 — screenshot or model failed. Retry: the payment or generation is released.
+- 400: missing/invalid URL (must be a public http(s) URL).
+- 401: invalid or unknown access key.
+- 402: payment required or rejected. Read the `PAYMENT-REQUIRED` header (x402) or the JSON `reason` / `error` field (e.g. `invalid_exact_evm_insufficient_balance`, unconfirmed or reused tx hash, pack with no generations left).
+- 502: screenshot or model failed. Retry; you were not charged.
 
 ## MCP
 

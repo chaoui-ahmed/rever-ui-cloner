@@ -7,15 +7,18 @@ export interface Env {
   STRIPE_SECRET_KEY: string;
   AGENT_PAYMENT_ADDRESS?: string;
   BASE_RPC_URL?: string;
-  /** JSON map of Stripe amount_total (cents) → generations, e.g. {"999":10,"1999":15,"4999":50} */
+  /** JSON map of Stripe amount_total (cents) → generations, e.g. {"999":10,"1999":25,"4999":70} */
   PACKS?: string;
+  /** Coinbase Developer Platform API key, for the x402 facilitator */
+  CDP_API_KEY_ID?: string;
+  CDP_API_KEY_SECRET?: string;
 }
 
 export const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type, x-payment, x-access-key",
+  "Access-Control-Allow-Headers": "content-type, x-payment, x-access-key, payment-signature",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Expose-Headers": "x-payment-response",
+  "Access-Control-Expose-Headers": "x-payment-response, payment-required, payment-response",
 };
 
 export const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
@@ -26,8 +29,8 @@ export const json = (body: unknown, status = 200, extra: Record<string, string> 
 
 // ---------- Agent payments: USDC on Base ----------
 
-export const AGENT_PRICE_USDC = 1;
-export const AGENT_PRICE_UNITS = BigInt(AGENT_PRICE_USDC) * 1_000_000n; // USDC has 6 decimals
+export const AGENT_PRICE_USD = "0.25";
+export const AGENT_PRICE_UNITS = 250_000n; // 0.25 USDC (6 decimals)
 export const USDC_BASE = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
 const DEFAULT_PAY_TO = "0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d";
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
@@ -49,11 +52,11 @@ export const paymentRequired = (env: Env, resource: string, reason?: string) =>
         maxAmountRequired: AGENT_PRICE_UNITS.toString(),
         payTo: payTo(env),
         resource,
-        description: `UI-to-prompt blueprint for one URL (${AGENT_PRICE_USDC} USDC)`,
+        description: `UI-to-prompt blueprint for one URL (${AGENT_PRICE_USD} USDC)`,
         mimeType: "application/json",
       }],
       howToPay:
-        `Send ${AGENT_PRICE_USDC} USDC on Base to ${payTo(env)}, then retry with header "X-Payment: <transaction hash>". ` +
+        `Send ${AGENT_PRICE_USD} USDC on Base to ${payTo(env)}, then retry with header "X-Payment: <transaction hash>". ` +
         `Each transaction can be used once. Humans can buy a pack at https://www.aypiai.online and send "X-Access-Key" instead.`,
     },
     402,
@@ -93,12 +96,12 @@ export async function verifyUsdcPayment(env: Env, txHash: string):
       return { ok: true, payer: "0x" + log.topics[1].slice(26).toLowerCase() };
     }
   }
-  return { ok: false, reason: `No USDC transfer of >= ${AGENT_PRICE_USDC} USDC to ${to} in this transaction` };
+  return { ok: false, reason: `No USDC transfer of >= ${AGENT_PRICE_USD} USDC to ${to} in this transaction` };
 }
 
 // ---------- Human payments: Stripe packs ----------
 
-const DEFAULT_PACKS: Record<string, number> = { "999": 10, "1999": 15, "4999": 50 };
+const DEFAULT_PACKS: Record<string, number> = { "999": 10, "1999": 25, "4999": 70 };
 
 /**
  * An access key is a Stripe Checkout Session id (cs_...). The first time we see it,

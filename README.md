@@ -10,15 +10,15 @@ Rever takes a full-page screenshot of the URL and has Claude Haiku describe the 
 
 | Who | How | Pays with |
 |---|---|---|
-| People | Web app at [aypiai.online](https://www.aypiai.online), no account | Card via Stripe: 10 generations for 9,99 € |
-| AI agents | `POST /functions/v1/generate-prompt` | 1 USDC on Base per call |
-| MCP clients | [`rever-mcp`](./rever-mcp) (`clone_ui` tool) | 1 USDC on Base, or a pack's access key |
+| People | Web app at [aypiai.online](https://www.aypiai.online), no account | Card via Stripe: 10 / 25 / 70 generations for 9,99 / 19,99 / 49,99 € |
+| AI agents | `POST /api/generate-prompt` (x402) | $0.25 in USDC on Base per call |
+| MCP clients | [`rever-mcp`](./rever-mcp) (`clone_ui` tool) | $0.25 in USDC on Base, or a pack's access key |
 
-### Agent payment flow
+### Agent payment flow (x402)
 
-1. Call the API without payment → `402` with network, asset, amount and `payTo`.
-2. Send 1 USDC on Base to `payTo`.
-3. Retry with `X-Payment: <tx hash>`. The function checks the receipt on-chain (USDC `Transfer` log to the right address, enough amount, 2 confirmations) and stores the hash so it can only be used once. If generation fails, the hash is released.
+The endpoint speaks [x402](https://x402.org) v2: an unpaid call returns `402` with a `PAYMENT-REQUIRED` header, an x402 client signs a USDC authorization and retries with `PAYMENT-SIGNATURE`. The facilitator (Coinbase CDP when `CDP_API_KEY_ID`/`CDP_API_KEY_SECRET` are set, PayAI's public facilitator otherwise) verifies the payment, the prompt is generated, and only then is the payment settled. The route declares Bazaar discovery metadata so it gets indexed in x402 catalogs after its first payment.
+
+Fallback: send USDC directly and retry with `X-Payment: <tx hash>` (verified on-chain, single use).
 
 ### Pack payment flow
 
