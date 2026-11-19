@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "online.aypiai/rever",
+  "name": "online.aypiai.www/rever",
   "title": "Rever",
   "description": "Turn any website URL into a prompt to recreate its UI with Lovable, v0, Claude or Cursor.",
   "version": "1.0.0",
