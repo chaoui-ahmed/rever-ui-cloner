@@ -10,7 +10,9 @@ class UpstreamError extends Error {}
 
 async function generate(env: Env, url: string) {
   const params = new URLSearchParams({
-    token: env.SCREENSHOT_API_KEY, url, output: "json", file_type: "png", wait_for_event: "load", full_page: "true",
+    // Capped size: Claude rejects images over 8000 px on a side or ~5 MB
+    token: env.SCREENSHOT_API_KEY, url, output: "json", file_type: "jpeg", wait_for_event: "load",
+    full_page: "false", width: "1280", height: "3200",
   });
   const shotRes = await fetch(`https://shot.screenshotapi.net/screenshot?${params}`);
   const shot = shotRes.ok ? ((await shotRes.json()) as { screenshot?: string }) : null;
@@ -18,7 +20,9 @@ async function generate(env: Env, url: string) {
 
   const imgRes = await fetch(shot.screenshot);
   if (!imgRes.ok) throw new UpstreamError("Screenshot download failed");
-  const image = arrayBufferToBase64(await imgRes.arrayBuffer());
+  const bytes = await imgRes.arrayBuffer();
+  if (bytes.byteLength > 5 * 1024 * 1024) throw new UpstreamError("Screenshot too large");
+  const image = arrayBufferToBase64(bytes);
 
   const aiRes = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -30,15 +34,15 @@ async function generate(env: Env, url: string) {
       messages: [{
         role: "user",
         content: [
-          { type: "image", source: { type: "base64", media_type: "image/png", data: image } },
+          { type: "image", source: { type: "base64", media_type: "image/jpeg", data: image } },
           { type: "text", text: "Reverse-engineer this UI." },
         ],
       }],
     }),
   });
-  const ai = (await aiRes.json()) as { content?: { text?: string }[] };
+  const ai = (await aiRes.json()) as { content?: { text?: string }[]; error?: { message?: string } };
   const prompt = ai?.content?.[0]?.text;
-  if (!aiRes.ok || !prompt) throw new UpstreamError("Model error");
+  if (!aiRes.ok || !prompt) throw new UpstreamError(`Model error: ${ai?.error?.message ?? aiRes.status}`);
   return prompt;
 }
 
