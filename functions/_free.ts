@@ -31,14 +31,12 @@ async function clientId(request: Request) {
 }
 
 /** Reserves one free call. Returns calls left after this one, or null if the limit is reached. */
-export let lastClient = "";
 export async function takeFreeCall(env: Env, request: Request): Promise<number | null> {
   if (!env.DB) return null;
   try {
     await ensureTable(env);
     const day = new Date().toISOString().slice(0, 10);
     const client = await clientId(request);
-    lastClient = client.slice(0, 6);
     const total = await env.DB.prepare("SELECT COALESCE(SUM(calls), 0) AS n FROM free_usage WHERE day = ?").bind(day).first<{ n: number }>();
     if ((total?.n ?? 0) >= GLOBAL_PER_DAY) return null;
     const row = await env.DB.prepare(
