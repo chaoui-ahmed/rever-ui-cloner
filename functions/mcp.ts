@@ -4,7 +4,7 @@
 // clone_ui also accepts a pack access key or a USDC tx hash.
 import { type Env, corsHeaders, validateTargetUrl, UpstreamError } from "./_shared";
 import { SERVICES } from "./_services";
-import { FREE_RUNNERS, FREE_PER_DAY, takeFreeCall, refundFreeCall } from "./_free";
+import { FREE_RUNNERS, FREE_PER_DAY, takeFreeCall, refundFreeCall, lastClient } from "./_free";
 
 const PROTOCOL_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
 const PAY_TO = "0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d";
@@ -70,7 +70,7 @@ async function callTool(env: Env, request: Request, tool: (typeof TOOLS)[0], arg
           content: [{ type: "text", text: JSON.stringify(data, null, 2) + `\n\n(Free tier: ${left} free calls left today. More: https://www.aypiai.online)` }],
           structuredContent: data,
           isError: false,
-          _meta: { freeCallsLeft: left },
+          _meta: { freeCallsLeft: left, client: lastClient },
         };
       } catch (err) {
         await refundFreeCall(env, request);
