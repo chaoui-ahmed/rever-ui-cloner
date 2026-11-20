@@ -94,43 +94,59 @@ async function doh(name: string, type: string): Promise<string[]> {
   }
 }
 
-async function rdap(domain: string) {
-  try {
-    const r = await fetch(`https://rdap.org/domain/${domain}`, { headers: { Accept: "application/rdap+json" }, redirect: "follow", signal: AbortSignal.timeout(7000) });
-    if (!r.ok) return null;
-    const d = (await r.json()) as any;
-    const ev = (a: string) => d.events?.find((e: any) => e.eventAction === a)?.eventDate ?? null;
-    const registrar = d.entities?.find((e: any) => e.roles?.includes("registrar"));
-    const created = ev("registration");
-    return {
-      domain,
-      registrar: registrar?.vcardArray?.[1]?.find((v: any) => v[0] === "fn")?.[3] ?? registrar?.handle ?? null,
-      created,
-      updated: ev("last changed"),
-      expires: ev("expiration"),
-      ageDays: created ? Math.floor((Date.now() - Date.parse(created)) / 86_400_000) : null,
-      status: d.status ?? [],
-      nameservers: (d.nameservers ?? []).map((n: any) => (n.ldhName ?? "").toLowerCase()).filter(Boolean),
-    };
-  } catch {
-    return null;
+let rdapBootstrap: Record<string, string> | null = null;
+async function rdapServers(tld: string): Promise<string[]> {
+  if (!rdapBootstrap) {
+    try {
+      const r = await fetch("https://data.iana.org/rdap/dns.json", { signal: AbortSignal.timeout(5000) });
+      const d = (await r.json()) as { services: [string[], string[]][] };
+      rdapBootstrap = {};
+      for (const [tlds, urls] of d.services) for (const t of tlds) rdapBootstrap[t] = urls[0];
+    } catch { rdapBootstrap = null; }
   }
+  const base = rdapBootstrap?.[tld];
+  return [...(base ? [base.replace(/\/?$/, "/")] : []), "https://rdap.org/"];
+}
+
+async function rdap(domain: string) {
+  const tld = domain.split(".").pop() ?? "";
+  for (const base of await rdapServers(tld)) {
+    try {
+      const r = await fetch(`${base}domain/${domain}`, { headers: { Accept: "application/rdap+json, application/json" }, redirect: "follow", signal: AbortSignal.timeout(7000) });
+      if (!r.ok) continue;
+      const d = (await r.json()) as any;
+      const ev = (a: string) => d.events?.find((e: any) => e.eventAction === a)?.eventDate ?? null;
+      const registrar = d.entities?.find((e: any) => e.roles?.includes("registrar"));
+      const created = ev("registration");
+      return {
+        domain,
+        registrar: registrar?.vcardArray?.[1]?.find((v: any) => v[0] === "fn")?.[3] ?? registrar?.handle ?? null,
+        created,
+        updated: ev("last changed"),
+        expires: ev("expiration"),
+        ageDays: created ? Math.floor((Date.now() - Date.parse(created)) / 86_400_000) : null,
+        status: d.status ?? [],
+        nameservers: (d.nameservers ?? []).map((n: any) => (n.ldhName ?? "").toLowerCase()).filter(Boolean),
+        source: base,
+      };
+    } catch { /* try next server */ }
+  }
+  return null;
 }
 
 async function wayback(host: string) {
-  const q = async (extra: string) => {
+  const snap = async (ts?: string) => {
     try {
-      const r = await fetch(`https://web.archive.org/cdx/search/cdx?url=${host}&output=json&fl=timestamp,original,statuscode${extra}`, { signal: AbortSignal.timeout(7000) });
-      const rows = (await r.json()) as string[][];
-      const row = rows?.[1];
-      if (!row) return null;
-      const ts = row[0];
-      return { date: `${ts.slice(0, 4)}-${ts.slice(4, 6)}-${ts.slice(6, 8)}`, url: `https://web.archive.org/web/${ts}/${row[1]}` };
+      const r = await fetch(`https://archive.org/wayback/available?url=${encodeURIComponent(host)}${ts ? `&timestamp=${ts}` : ""}`, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(8000) });
+      const c = ((await r.json()) as any)?.archived_snapshots?.closest;
+      if (!c?.timestamp) return null;
+      const t = String(c.timestamp);
+      return { date: `${t.slice(0, 4)}-${t.slice(4, 6)}-${t.slice(6, 8)}`, url: String(c.url).replace(/^http:/, "https:") };
     } catch {
       return null;
     }
   };
-  const [first, last] = await Promise.all([q("&limit=1"), q("&limit=-1&fastLatest=true")]);
+  const [first, last] = await Promise.all([snap("19960101"), snap()]);
   return { first, last, ageDays: first ? Math.floor((Date.now() - Date.parse(first.date)) / 86_400_000) : null };
 }
 
@@ -619,14 +635,22 @@ export const MICRO: Micro[] = [
       for (const f of uniq([...declared, ...guesses]).slice(0, 8)) {
         const r = await tryText(f, 3_000_000);
         if (!r || r.status !== 200 || !/<(rss|feed|rdf)/i.test(r.text.slice(0, 2000))) continue;
-        const x = parse(r.text, { comment: false });
-        const items = x.querySelectorAll("item, entry").slice(0, n).map((it) => ({
-          title: it.querySelector("title")?.text.trim() ?? null,
-          link: it.querySelector("link")?.getAttribute("href") ?? (it.querySelector("link")?.text.trim() || null),
-          date: (it.querySelector("pubDate") ?? it.querySelector("published") ?? it.querySelector("updated") ?? it.querySelector("dc\\:date"))?.text.trim() ?? null,
-          summary: (it.querySelector("description") ?? it.querySelector("summary"))?.text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300) ?? null,
+        const tag = (chunk: string, names: string[]) => {
+          for (const nm of names) {
+            const m = chunk.match(new RegExp(`<${nm}[^>]*>([\\s\\S]*?)</${nm}>`, "i"));
+            if (m) return m[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, " ").trim();
+          }
+          return null;
+        };
+        const chunks = [...r.text.matchAll(/<(item|entry)[\s>][\s\S]*?<\/\1>/gi)].map((m) => m[0]).slice(0, n);
+        const items = chunks.map((c) => ({
+          title: tag(c, ["title"]),
+          link: c.match(/<link[^>]*rel=["']alternate["'][^>]*href=["']([^"']+)/i)?.[1] ?? c.match(/<link[^>]*href=["']([^"']+)/i)?.[1] ?? tag(c, ["link", "guid"]),
+          date: tag(c, ["pubDate", "published", "updated", "dc:date"]),
+          summary: tag(c, ["description", "summary", "content"])?.slice(0, 300) ?? null,
         }));
-        return { url, feeds: uniq([...declared, f]), feedUrl: f, feedTitle: x.querySelector("title")?.text.trim() ?? null, items };
+        const head = r.text.split(/<(item|entry)[\s>]/i)[0];
+        return { url, feeds: uniq([...declared, f]), feedUrl: f, feedTitle: tag(head, ["title"]), items };
       }
       return { url, feeds: declared, items: [], note: "No readable RSS/Atom feed found." };
     }, { limit: { type: "number", description: "Max items (1-50, default 20)" } }),
