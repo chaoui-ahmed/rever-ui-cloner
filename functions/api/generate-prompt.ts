@@ -4,6 +4,7 @@ import {
 } from "../_shared";
 import { withX402, x402Enabled } from "../_x402";
 import { generateUiPrompt, UpstreamError } from "../_services";
+import { methodNotAllowed, readJsonBody } from "../_paid";
 
 const withCors = (res: Response) => {
   const out = new Response(res.body, res);
@@ -15,22 +16,16 @@ async function generate(env: Env, url: string) {
   return (await generateUiPrompt(env, url)).prompt;
 }
 
-export const onRequestOptions: PagesFunction<Env> = () => new Response(null, { headers: corsHeaders });
-
-export const onRequestGet: PagesFunction<Env> = () =>
-  json({ error: "Use POST with JSON body {\"url\": \"https://...\"}. Docs: https://www.aypiai.online/llms.txt" }, 405);
-
-export const onRequestPost: PagesFunction<Env> = async (ctx) => withCors(await handlePost(ctx));
+export const onRequest: PagesFunction<Env> = async (ctx) => {
+  if (ctx.request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
+  if (ctx.request.method !== "POST") return methodNotAllowed('{"url": "https://..."}');
+  return withCors(await handlePost(ctx));
+};
 
 const handlePost: PagesFunction<Env> = async ({ request, env }) => {
-  let body: { url?: unknown };
-  try {
-    body = await request.json();
-  } catch {
-    return json({ error: "Body must be valid JSON" }, 400);
-  }
-  const url = validateTargetUrl(body?.url);
-  if (!url) return json({ error: "Valid public http(s) URL required in field \"url\"" }, 400);
+  const body = await readJsonBody(request);
+  const url = validateTargetUrl(body.url);
+  const badUrl = () => json({ error: "Valid public http(s) URL required in field \"url\"" }, 400);
 
   const resource = new URL(request.url).origin + "/api/generate-prompt";
   const accessKey = request.headers.get("X-Access-Key")?.trim();
@@ -38,6 +33,7 @@ const handlePost: PagesFunction<Env> = async ({ request, env }) => {
 
   // ---- Human with a Stripe pack ----
   if (accessKey) {
+    if (!url) return badUrl();
     const redeemed = await redeemAccessKey(env, accessKey);
     if (!redeemed.ok) return json({ error: redeemed.reason }, redeemed.status);
 
@@ -60,6 +56,7 @@ const handlePost: PagesFunction<Env> = async ({ request, env }) => {
   const isTxHash = !!txHash && /^0x[0-9a-f]{64}$/.test(txHash);
   if (!isTxHash && x402Enabled(env)) {
     const x402Response = await withX402(env, request, body, async () => {
+      if (!url) return badUrl(); // after verification: cancels the payment, never charged
       try {
         return json({ prompt: await generate(env, url), url });
       } catch (err) {
@@ -71,6 +68,7 @@ const handlePost: PagesFunction<Env> = async ({ request, env }) => {
 
   // ---- Agent paying by direct USDC transfer + tx hash (fallback) ----
   if (!txHash) return paymentRequired(env, resource);
+  if (!url) return badUrl();
 
   const check = await verifyUsdcPayment(env, txHash);
   if (!check.ok) return paymentRequired(env, resource, check.reason);

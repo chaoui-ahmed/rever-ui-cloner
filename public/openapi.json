@@ -7,7 +7,8 @@
     "description": "Takes a screenshot of a public URL and returns a detailed design brief (layout, components, colors, typography, spacing) that a code-generation model can use to rebuild the UI in React + Tailwind. Price $0.25 per successful call. Agents pay with x402 v2 (exact scheme, USDC on Base eip155:8453): the first call returns 402 with a PAYMENT-REQUIRED header; retry with PAYMENT-SIGNATURE. Also accepted: X-Payment with the hash of a direct USDC transfer, or X-Access-Key from a pack bought on the website. Full guide: https://www.aypiai.online/llms-full.txt",
     "contact": {
       "name": "Ahmed Chaoui",
-      "url": "https://github.com/chaoui-ahmed/rever-ui-cloner"
+      "email": "tahachaoui5@gmail.com",
+      "url": "https://www.aypiai.online"
     },
     "license": {
       "name": "MIT",
@@ -163,11 +164,7 @@
       "get": {
         "operationId": "getBalance",
         "summary": "Generations left on an access key",
-        "security": [
-          {
-            "accessKey": []
-          }
-        ],
+        "security": [],
         "responses": {
           "200": {
             "description": "OK",
