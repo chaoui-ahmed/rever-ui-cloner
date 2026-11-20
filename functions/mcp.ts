@@ -8,13 +8,13 @@ const TOOL = {
   name: "clone_ui",
   title: "Clone a website's UI as a prompt",
   description:
-    "Turn a public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model such as Lovable, v0, Claude or Cursor. Returns text, not code. Takes 10-30 s. Costs $0.25: pass access_key (pack bought on https://www.aypiai.online) or payment_tx (hash of a 0.25 USDC transfer on Base to the address returned when called without payment). x402-capable agents can instead call https://www.aypiai.online/api/generate-prompt directly.",
+    "Turn a public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model such as Lovable, v0, Claude or Cursor. Returns text, not code. Takes 10-30 s. Costs $0.05: pass access_key (pack bought on https://www.aypiai.online) or payment_tx (hash of a 0.05 USDC transfer on Base to the address returned when called without payment). x402-capable agents can instead call https://www.aypiai.online/api/generate-prompt directly.",
   inputSchema: {
     type: "object",
     properties: {
       url: { type: "string", description: "Public http(s) URL to recreate, e.g. https://stripe.com" },
       access_key: { type: "string", description: "Optional. Access key of a pack (cs_live_...)." },
-      payment_tx: { type: "string", description: "Optional. Base tx hash of a 0.25 USDC payment (single use)." },
+      payment_tx: { type: "string", description: "Optional. Base tx hash of a 0.05 USDC payment (single use)." },
     },
     required: ["url"],
   },
@@ -49,9 +49,9 @@ async function callTool(request: Request, args: Record<string, any>) {
       content: [{
         type: "text",
         text:
-          `Payment required${reason && reason !== "Payment Required" ? ` (${reason})` : ""}. Price: $0.25 per call. Options:\n` +
+          `Payment required${reason && reason !== "Payment Required" ? ` (${reason})` : ""}. Price: $0.05 per call. Options:\n` +
           `1. Buy a pack by card at https://www.aypiai.online and call again with access_key.\n` +
-          `2. Send 0.25 USDC on Base to 0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d, then call again with payment_tx set to the transaction hash.\n` +
+          `2. Send 0.05 USDC on Base to 0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d, then call again with payment_tx set to the transaction hash.\n` +
           `3. If you have an x402 client, POST {"url": ...} to https://www.aypiai.online/api/generate-prompt directly.`,
       }],
     };

@@ -8,23 +8,24 @@ Rever takes a full-page screenshot of the URL and has Claude Haiku describe the 
 
 ## Services
 
-| Endpoint | What it returns | Price (x402) |
-|---|---|---|
-| `POST /api/generate-prompt` | Prompt to recreate a site's UI | $0.25 |
-| `POST /api/design-tokens` | Palette, fonts, spacing, radii, shadows, Tailwind theme (JSON) | $0.05 |
-| `POST /api/screenshot` | JPEG screenshot (width, height, fullPage) | $0.02 |
-| `POST /api/tech-stack` | Framework, builder, hosting, CSS, analytics, payments, auth | $0.02 |
-| `POST /api/brand-kit` | Logo (URL + SVG), favicon, palette, CSS variables, fonts | $0.03 |
-| `POST /api/page-markdown` | Main content as clean Markdown | $0.01 |
-| `POST /api/meta` | Title, description, Open Graph, icons, JSON-LD, link counts | $0.005 |
+39 pay-per-call endpoints ($0.001 to $0.05), all `POST {"url": "..."}`, paid with x402. Full list: [llms.txt](https://www.aypiai.online/llms.txt) and [x402.json](https://www.aypiai.online/.well-known/x402.json).
+
+- **Read a page:** page-markdown, page-text, meta, links, images, headings, structured-data, og-image, favicon, forms, feeds, key-pages, language, text-stats
+- **Companies and leads:** company-info, contacts, social-links, tech-stack, trackers
+- **SEO and audits:** seo-audit, ai-readiness, broken-links, sitemap, robots, page-weight, redirects
+- **Security, domain, network:** security-headers, https-check, dns, email-security, domain-whois, wayback, headers, status
+- **Crypto:** crypto-site-check ($0.02)
+- **Design:** generate-prompt ($0.05), design-tokens, brand-kit, screenshot
+
+Services live in `functions/_services.ts` (AI/screenshot) and `functions/_micro.ts` (HTML/DNS based, served by `functions/api/[service].ts`). After adding or repricing one, run `npx tsx scripts/gen-discovery.ts` to regenerate openapi.json, x402.json and llms*.txt.
 
 ## Three ways to use it
 
 | Who | How | Pays with |
 |---|---|---|
 | People | Web app at [aypiai.online](https://www.aypiai.online), no account | Card via Stripe: 10 / 25 / 70 generations for 9,99 / 19,99 / 49,99 € |
-| AI agents | `POST /api/generate-prompt` (x402) | $0.25 in USDC on Base per call |
-| MCP clients | `https://www.aypiai.online/mcp` (remote) or [`rever-mcp`](./rever-mcp) (local), tool `clone_ui` | $0.25 in USDC on Base, or a pack's access key |
+| AI agents | `POST /api/generate-prompt` (x402) | $0.001-$0.05 in USDC on Base per call |
+| MCP clients | `https://www.aypiai.online/mcp` (remote) or [`rever-mcp`](./rever-mcp) (local), tool `clone_ui` | $0.05 in USDC on Base, or a pack's access key |
 
 ### Agent payment flow (x402)
 

@@ -1,7 +1,7 @@
 {
   "x402Version": 2,
   "name": "Rever",
-  "description": "Website intelligence for AI agents: UI-recreation prompts, design tokens, brand kits, screenshots, page-to-markdown, metadata and tech-stack detection. Pay per call in USDC on Base, no API key.",
+  "description": "Website intelligence for AI agents: 39 pay-per-call endpoints ($0.001 to $0.05): scraping, SEO, security, DNS, WHOIS, tech stack, design, screenshots and crypto project trust checks. USDC on Base, no API key.",
   "website": "https://www.aypiai.online",
   "docs": {
     "llms": "https://www.aypiai.online/llms.txt",
@@ -17,13 +17,34 @@
       "resource": "https://www.aypiai.online/api/generate-prompt",
       "method": "POST",
       "scheme": "exact",
-      "price": "$0.25",
-      "amount": "250000",
+      "price": "$0.05",
+      "amount": "50000",
       "description": "Turn any public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model such as Lovable, v0, Claude or Cursor. Returns text, not code. Takes 10-30 s.",
+      "tags": [
+        "ui",
+        "design",
+        "website",
+        "clone",
+        "prompt",
+        "screenshot",
+        "frontend"
+      ],
       "input": {
         "contentType": "application/json",
         "example": {
           "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
         }
       }
     },
@@ -31,13 +52,35 @@
       "resource": "https://www.aypiai.online/api/design-tokens",
       "method": "POST",
       "scheme": "exact",
-      "price": "$0.05",
-      "amount": "50000",
+      "price": "$0.02",
+      "amount": "20000",
       "description": "Extract a website's design tokens as JSON: color palette with roles (hex), fonts and type scale, spacing, border radii, shadows, light/dark mode, and a ready-to-use Tailwind theme extension. Takes 5-20 s.",
+      "tags": [
+        "design-tokens",
+        "colors",
+        "palette",
+        "fonts",
+        "typography",
+        "tailwind",
+        "branding",
+        "design"
+      ],
       "input": {
         "contentType": "application/json",
         "example": {
-          "url": "https://stripe.com"
+          "url": "https://linear.app"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
         }
       }
     },
@@ -45,13 +88,47 @@
       "resource": "https://www.aypiai.online/api/screenshot",
       "method": "POST",
       "scheme": "exact",
-      "price": "$0.02",
-      "amount": "20000",
+      "price": "$0.01",
+      "amount": "10000",
       "description": "Screenshot any public web page. Returns a JPEG (base64 data URL plus a hosted URL). Options: width (320-2560, default 1280), height (300-8000, default 900), fullPage (boolean). Takes 3-15 s.",
+      "tags": [
+        "screenshot",
+        "browser",
+        "render",
+        "image",
+        "webpage",
+        "capture"
+      ],
       "input": {
         "contentType": "application/json",
         "example": {
-          "url": "https://stripe.com"
+          "url": "https://example.com",
+          "width": 1280,
+          "fullPage": false
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            },
+            "width": {
+              "type": "number",
+              "description": "Viewport width in px (320-2560)"
+            },
+            "height": {
+              "type": "number",
+              "description": "Viewport height in px (300-8000)"
+            },
+            "fullPage": {
+              "type": "boolean",
+              "description": "Capture the whole page"
+            }
+          },
+          "required": [
+            "url"
+          ]
         }
       }
     },
@@ -59,13 +136,35 @@
       "resource": "https://www.aypiai.online/api/tech-stack",
       "method": "POST",
       "scheme": "exact",
-      "price": "$0.02",
-      "amount": "20000",
+      "price": "$0.005",
+      "amount": "5000",
       "description": "Detect the technologies behind a website: framework (Next.js, Nuxt, Astro, React...), site builder (Webflow, Framer, Lovable, Shopify, WordPress...), hosting/CDN (Vercel, Netlify, Cloudflare...), CSS (Tailwind, Bootstrap), analytics, payments, auth and support tools, with evidence. Fast (1-3 s).",
+      "tags": [
+        "tech-stack",
+        "technology",
+        "framework",
+        "detection",
+        "wappalyzer",
+        "builtwith",
+        "website",
+        "lead-research"
+      ],
       "input": {
         "contentType": "application/json",
         "example": {
-          "url": "https://stripe.com"
+          "url": "https://vercel.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
         }
       }
     },
@@ -73,13 +172,35 @@
       "resource": "https://www.aypiai.online/api/brand-kit",
       "method": "POST",
       "scheme": "exact",
-      "price": "$0.03",
-      "amount": "30000",
+      "price": "$0.01",
+      "amount": "10000",
       "description": "Get a website's brand kit in one call: the site's own logo (URL plus inline SVG when available, not customer logos), favicon, theme color, color palette ranked by usage, brand CSS variables and fonts, read from its HTML and stylesheets. Fast (1-4 s).",
+      "tags": [
+        "brand",
+        "logo",
+        "favicon",
+        "colors",
+        "fonts",
+        "branding",
+        "design",
+        "company"
+      ],
       "input": {
         "contentType": "application/json",
         "example": {
           "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
         }
       }
     },
@@ -87,13 +208,40 @@
       "resource": "https://www.aypiai.online/api/page-markdown",
       "method": "POST",
       "scheme": "exact",
-      "price": "$0.01",
-      "amount": "10000",
+      "price": "$0.003",
+      "amount": "3000",
       "description": "Convert any web page into clean Markdown for LLMs: main content only (no nav, footer, scripts, cookie banners), with headings, lists, links, images, tables and code blocks preserved. Optional maxChars (1,000-200,000, default 50,000). Fast (1-3 s).",
+      "tags": [
+        "markdown",
+        "scrape",
+        "web",
+        "content",
+        "llm",
+        "reader",
+        "extract",
+        "text"
+      ],
       "input": {
         "contentType": "application/json",
         "example": {
-          "url": "https://stripe.com"
+          "url": "https://en.wikipedia.org/wiki/HTTP_402",
+          "maxChars": 20000
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            },
+            "maxChars": {
+              "type": "number",
+              "description": "Max characters returned (1000-200000)"
+            }
+          },
+          "required": [
+            "url"
+          ]
         }
       }
     },
@@ -101,13 +249,1178 @@
       "resource": "https://www.aypiai.online/api/meta",
       "method": "POST",
       "scheme": "exact",
-      "price": "$0.005",
-      "amount": "5000",
+      "price": "$0.002",
+      "amount": "2000",
       "description": "Get a page's metadata: title, description, canonical URL, language, Open Graph and Twitter card (including preview image), icons, RSS feeds, JSON-LD types, H1s, link and word counts. Fast (under 2 s).",
+      "tags": [
+        "metadata",
+        "seo",
+        "open-graph",
+        "link-preview",
+        "unfurl",
+        "title",
+        "favicon",
+        "web"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://vercel.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/contacts",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.003",
+      "amount": "3000",
+      "description": "Extract contact details from a web page: email addresses (including mailto links and [at]-obfuscated ones), phone numbers (tel links and visible numbers) and postal addresses from structured data. Fast (1-3 s).",
+      "tags": [
+        "contacts",
+        "email",
+        "phone",
+        "lead-generation",
+        "scrape",
+        "enrichment",
+        "sales"
+      ],
       "input": {
         "contentType": "application/json",
         "example": {
           "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/social-links",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "Find a website's social media profiles: X/Twitter, LinkedIn, Facebook, Instagram, YouTube, TikTok, GitHub, Discord, Telegram, Medium, Reddit, Threads, Bluesky, Farcaster and more, from its links. Fast (1-3 s).",
+      "tags": [
+        "social",
+        "twitter",
+        "linkedin",
+        "profiles",
+        "enrichment",
+        "lead-research",
+        "osint"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/links",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "List every link on a web page with its anchor text, split into internal and external, with nofollow flags and the external domains linked to. Up to 500 links. Fast (1-3 s).",
+      "tags": [
+        "links",
+        "crawl",
+        "scrape",
+        "seo",
+        "backlinks",
+        "urls",
+        "outbound"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/broken-links",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.005",
+      "amount": "5000",
+      "description": "Check the links on a web page for broken ones: requests up to 40 unique links in parallel and reports each status code, broken links (4xx/5xx/unreachable) and redirects. Takes 2-10 s.",
+      "tags": [
+        "broken-links",
+        "link-checker",
+        "seo",
+        "qa",
+        "404",
+        "website-audit",
+        "monitoring"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max links to check (1-40, default 40)"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/sitemap",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.003",
+      "amount": "3000",
+      "description": "Get every URL a website lists in its XML sitemaps: finds sitemaps via robots.txt and common paths, follows sitemap indexes (up to 5 children) and returns URLs with lastmod dates. Optional limit (default 1000, max 5000). Takes 1-6 s.",
+      "tags": [
+        "sitemap",
+        "crawl",
+        "urls",
+        "seo",
+        "site-map",
+        "indexing",
+        "discovery"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max URLs returned (1-5000, default 1000)"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/robots",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "Read and parse a website's robots.txt: user-agent groups with allow/disallow rules, declared sitemaps, and which AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot...) are blocked from the whole site. Fast (under 2 s).",
+      "tags": [
+        "robots.txt",
+        "crawler",
+        "ai-bots",
+        "seo",
+        "scraping",
+        "compliance",
+        "gptbot"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/security-headers",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "Grade a website's HTTP security headers (A-F): HSTS, Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP, plus leaked server/version headers, with a fix hint for each missing one. Fast (under 2 s).",
+      "tags": [
+        "security",
+        "headers",
+        "hsts",
+        "csp",
+        "audit",
+        "pentest",
+        "compliance"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/https-check",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "Check a site's HTTPS setup: whether http:// redirects to https://, HSTS and preload readiness, final URL, and mixed content (insecure http:// scripts, styles, images or iframes on the https page). Fast (1-3 s).",
+      "tags": [
+        "https",
+        "ssl",
+        "tls",
+        "hsts",
+        "mixed-content",
+        "security",
+        "audit"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/redirects",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "Trace a URL's full redirect chain hop by hop (up to 10): status code, Location and server for each hop, final URL, and loop detection. Useful for link unshortening and SEO migrations. Fast (1-3 s).",
+      "tags": [
+        "redirects",
+        "redirect-chain",
+        "unshorten",
+        "seo",
+        "301",
+        "url",
+        "tracking"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/headers",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.001",
+      "amount": "1000",
+      "description": "Get the raw HTTP response headers of any URL, with status code, final URL after redirects and response time. Fast (under 2 s).",
+      "tags": [
+        "http",
+        "headers",
+        "debug",
+        "cache",
+        "cdn",
+        "api",
+        "network"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/status",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.001",
+      "amount": "1000",
+      "description": "Is this website up? Returns up/down, HTTP status, response time in ms, final URL and content type. Cheapest uptime check for agents. Fast (under 2 s).",
+      "tags": [
+        "uptime",
+        "status",
+        "monitoring",
+        "ping",
+        "health-check",
+        "is-it-down",
+        "availability"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/language",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.001",
+      "amount": "1000",
+      "description": "Detect a web page's language: html lang attribute, Content-Language header, og:locale, hreflang alternates (other language versions) and a guess from the visible text. Fast (1-3 s).",
+      "tags": [
+        "language",
+        "locale",
+        "i18n",
+        "hreflang",
+        "translation",
+        "detection",
+        "seo"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/text-stats",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "Text statistics for a web page's visible content: word, sentence and paragraph counts, reading time, Flesch reading-ease score and top keywords (stop words removed). Fast (1-3 s).",
+      "tags": [
+        "word-count",
+        "readability",
+        "keywords",
+        "content",
+        "seo",
+        "text-analysis",
+        "reading-time"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/structured-data",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.003",
+      "amount": "3000",
+      "description": "Extract all structured data from a web page: every JSON-LD block parsed (Organization, Product, Article, FAQ, Breadcrumb, Event...), microdata item types and RDFa types. Fast (1-3 s).",
+      "tags": [
+        "structured-data",
+        "json-ld",
+        "schema.org",
+        "microdata",
+        "seo",
+        "rich-results",
+        "scrape"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/og-image",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.001",
+      "amount": "1000",
+      "description": "Get the social preview image of a page (what shows when a link is shared): og:image and twitter:image with declared size and alt text, or the first large page image as a fallback. Fast (under 2 s).",
+      "tags": [
+        "og-image",
+        "open-graph",
+        "link-preview",
+        "thumbnail",
+        "social",
+        "unfurl",
+        "image"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/feeds",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.003",
+      "amount": "3000",
+      "description": "Find a website's RSS/Atom feeds (declared links and common paths like /feed and /rss.xml) and return the latest items from the first one: title, link, date, summary. Takes 1-5 s.",
+      "tags": [
+        "rss",
+        "atom",
+        "feed",
+        "news",
+        "blog",
+        "monitoring",
+        "content"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max items (1-50, default 20)"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/images",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "List the images on a web page with absolute URL, alt text, declared width/height and lazy-loading, plus counts of images missing alt text (accessibility/SEO). Up to 300 images. Fast (1-3 s).",
+      "tags": [
+        "images",
+        "alt-text",
+        "accessibility",
+        "seo",
+        "scrape",
+        "media",
+        "a11y"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/headings",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.001",
+      "amount": "1000",
+      "description": "Get the heading outline of a web page (H1-H6 in document order) with counts per level and structure warnings (no H1, several H1s, skipped levels). Fast (under 2 s).",
+      "tags": [
+        "headings",
+        "outline",
+        "h1",
+        "seo",
+        "structure",
+        "content",
+        "accessibility"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/seo-audit",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.005",
+      "amount": "5000",
+      "description": "Quick on-page SEO audit with a 0-100 score: title and meta description length, H1, canonical, lang, viewport, noindex, Open Graph, image alt text, structured data, HTTPS, robots.txt and sitemap, with a fix for each failed check. Takes 2-5 s.",
+      "tags": [
+        "seo",
+        "audit",
+        "on-page",
+        "meta-tags",
+        "website-audit",
+        "marketing",
+        "ranking"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/favicon",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.001",
+      "amount": "1000",
+      "description": "Get the best favicon/icon for a website: the largest declared icon (apple-touch-icon, SVG, sized PNGs), all candidates with sizes, and whether /favicon.ico exists. Fast (under 2 s).",
+      "tags": [
+        "favicon",
+        "icon",
+        "logo",
+        "branding",
+        "link-preview",
+        "website",
+        "image"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/dns",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "DNS lookup for a website's domain: A, AAAA, CNAME, MX, NS, TXT and CAA records, via Cloudflare DNS-over-HTTPS. Pass a URL or bare hostname. Fast (under 2 s).",
+      "tags": [
+        "dns",
+        "domain",
+        "mx",
+        "txt",
+        "nameservers",
+        "network",
+        "infrastructure"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/email-security",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.003",
+      "amount": "3000",
+      "description": "Check a domain's email setup and spoofing protection: MX records and email provider (Google Workspace, Microsoft 365, Zoho...), SPF, DMARC policy and common DKIM selectors, with a 0-100 score. Fast (1-3 s).",
+      "tags": [
+        "email",
+        "spf",
+        "dmarc",
+        "dkim",
+        "mx",
+        "deliverability",
+        "security"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/domain-whois",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.003",
+      "amount": "3000",
+      "description": "Domain registration data via RDAP (modern WHOIS): registrar, creation, update and expiry dates, domain age in days, status flags and nameservers. Useful for trust and fraud checks. Takes 1-4 s.",
+      "tags": [
+        "whois",
+        "rdap",
+        "domain",
+        "domain-age",
+        "registrar",
+        "fraud",
+        "trust"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/ai-readiness",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.003",
+      "amount": "3000",
+      "description": "How readable is a website for AI agents? Checks llms.txt and llms-full.txt, AI crawler rules in robots.txt, sitemap, JSON-LD, whether content renders without JavaScript, OpenAPI, MCP and x402 manifests, with a 0-100 score and fixes. Takes 2-5 s.",
+      "tags": [
+        "ai-readiness",
+        "llms.txt",
+        "geo",
+        "aeo",
+        "ai-seo",
+        "agents",
+        "mcp"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/page-text",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "Get the plain visible text of a web page (no HTML, scripts or styles), whitespace-normalized, with title and word count. Optional maxChars (1,000-200,000, default 50,000). Fast (1-3 s).",
+      "tags": [
+        "text",
+        "scrape",
+        "extract",
+        "content",
+        "llm",
+        "reader",
+        "plain-text"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            },
+            "maxChars": {
+              "type": "number",
+              "description": "Max characters (1000-200000)"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/forms",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "List the forms on a web page: action URL, method, fields (name, type, label, required) and a guess of each form's purpose (login, signup, newsletter, search, contact, payment). Fast (1-3 s).",
+      "tags": [
+        "forms",
+        "inputs",
+        "scrape",
+        "automation",
+        "lead-capture",
+        "qa",
+        "browser-agent"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/trackers",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.003",
+      "amount": "3000",
+      "description": "Detect analytics, ad and tracking scripts on a web page (Google Analytics/Tag Manager, Meta Pixel, TikTok, LinkedIn, Hotjar, Clarity, Segment, Mixpanel, HubSpot, Plausible...), cookie-consent tools and all third-party script domains. Fast (1-3 s).",
+      "tags": [
+        "trackers",
+        "privacy",
+        "gdpr",
+        "analytics",
+        "cookies",
+        "pixels",
+        "compliance"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/company-info",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.005",
+      "amount": "5000",
+      "description": "Company profile from its website in one call: name, description, logo, founding date, address, phones, emails, social profiles and links to about/contact/careers/pricing pages, from structured data and the page. Takes 1-4 s.",
+      "tags": [
+        "company",
+        "enrichment",
+        "firmographics",
+        "lead-research",
+        "crm",
+        "b2b",
+        "sales"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/key-pages",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "Find the important pages of a website from its home page links: about, contact, pricing, careers, blog, docs, login, signup, team, privacy and terms. Saves agents from crawling. Fast (1-3 s).",
+      "tags": [
+        "navigation",
+        "pages",
+        "crawl",
+        "pricing",
+        "careers",
+        "contact",
+        "browser-agent"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/page-weight",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "Page performance basics without a browser: time to first byte, HTML size, compression, caching headers, CDN, and counts of scripts, stylesheets, images, fonts and iframes, with inline script/style size. Fast (1-3 s).",
+      "tags": [
+        "performance",
+        "page-speed",
+        "ttfb",
+        "web-vitals",
+        "cdn",
+        "cache",
+        "audit"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/wayback",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.002",
+      "amount": "2000",
+      "description": "Internet Archive history of a website: first and latest Wayback Machine snapshot (date and link) and how long the site has existed online. Useful for trust checks and research. Takes 1-5 s.",
+      "tags": [
+        "wayback-machine",
+        "archive",
+        "history",
+        "domain-age",
+        "trust",
+        "research",
+        "osint"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Public http(s) URL"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/crypto-site-check",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.02",
+      "amount": "20000",
+      "description": "Due-diligence check of a crypto project's website before you buy or interact: domain age (RDAP) and first archive date, HTTPS/security, socials (X, Telegram, Discord, GitHub), docs/whitepaper, team page, audit firms mentioned, contract addresses on the page (optionally verifies yours), scam phrases and wallet-drainer signals (seed-phrase inputs), template/free-hosting signs. Returns a 0-100 trust score, red and green flags. Heuristics, not financial advice. Takes 3-8 s.",
+      "tags": [
+        "crypto",
+        "token",
+        "scam-check",
+        "rug-pull",
+        "due-diligence",
+        "web3",
+        "defi",
+        "trust-score",
+        "memecoin"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://uniswap.org",
+          "contract": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "Project website (public http(s) URL)"
+            },
+            "contract": {
+              "type": "string",
+              "description": "Optional token contract address to verify it is published on the site"
+            }
+          },
+          "required": [
+            "url"
+          ]
         }
       }
     }

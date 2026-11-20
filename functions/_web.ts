@@ -1,13 +1,12 @@
 // HTML-based services (no screenshot, no AI): page metadata, page → markdown, brand kit.
 // Not a route.
 import { parse, HTMLElement, TextNode, type Node } from "node-html-parser";
-import { type Env, validateTargetUrl } from "./_shared";
-import { UpstreamError } from "./_services";
+import { type Env, validateTargetUrl, UpstreamError } from "./_shared";
 
-const UA = "Mozilla/5.0 (compatible; ReverBot/1.0; +https://www.aypiai.online)";
+export const UA = "Mozilla/5.0 (compatible; ReverBot/1.0; +https://www.aypiai.online)";
 const MAX_HTML = 2_000_000;
 
-async function fetchHtml(url: string) {
+export async function fetchHtml(url: string) {
   const res = await fetch(url, { headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" }, redirect: "follow" });
   if (!res.ok) throw new UpstreamError(`Site answered ${res.status}`);
   const type = res.headers.get("content-type") ?? "";
@@ -16,7 +15,7 @@ async function fetchHtml(url: string) {
   return { html, finalUrl: res.url || url, root: parse(html, { comment: false }) };
 }
 
-const abs = (href: string | undefined | null, base: string) => {
+export const abs = (href: string | undefined | null, base: string) => {
   if (!href) return null;
   try {
     return new URL(href.trim(), base).toString();
@@ -25,7 +24,7 @@ const abs = (href: string | undefined | null, base: string) => {
   }
 };
 
-const meta = (root: HTMLElement, key: string) =>
+export const meta = (root: HTMLElement, key: string) =>
   root.querySelector(`meta[property="${key}"]`)?.getAttribute("content") ??
   root.querySelector(`meta[name="${key}"]`)?.getAttribute("content") ??
   null;

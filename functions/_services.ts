@@ -1,7 +1,9 @@
 // The paid services and their x402 route definitions. Not a route (no onRequest export).
 import { type Env, arrayBufferToBase64 } from "./_shared";
 
-export class UpstreamError extends Error {}
+import { UpstreamError } from "./_shared";
+import { MICRO } from "./_micro";
+export { UpstreamError };
 
 type Shot = { imageUrl: string; base64: string; bytes: number };
 
@@ -212,10 +214,10 @@ export type ServiceDef = {
   outputSchema: Record<string, unknown>;
 };
 
-export const SERVICES: ServiceDef[] = [
+const CORE_SERVICES: ServiceDef[] = [
   {
     path: "/api/generate-prompt",
-    priceUsd: "0.25",
+    priceUsd: "0.05",
     description:
       "Turn any public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model such as Lovable, v0, Claude or Cursor. Returns text, not code. Takes 10-30 s.",
     tags: ["ui", "design", "website", "clone", "prompt", "screenshot", "frontend"],
@@ -226,7 +228,7 @@ export const SERVICES: ServiceDef[] = [
   },
   {
     path: "/api/design-tokens",
-    priceUsd: "0.05",
+    priceUsd: "0.02",
     description:
       "Extract a website's design tokens as JSON: color palette with roles (hex), fonts and type scale, spacing, border radii, shadows, light/dark mode, and a ready-to-use Tailwind theme extension. Takes 5-20 s.",
     tags: ["design-tokens", "colors", "palette", "fonts", "typography", "tailwind", "branding", "design"],
@@ -237,7 +239,7 @@ export const SERVICES: ServiceDef[] = [
   },
   {
     path: "/api/screenshot",
-    priceUsd: "0.02",
+    priceUsd: "0.01",
     description:
       "Screenshot any public web page. Returns a JPEG (base64 data URL plus a hosted URL). Options: width (320-2560, default 1280), height (300-8000, default 900), fullPage (boolean). Takes 3-15 s.",
     tags: ["screenshot", "browser", "render", "image", "webpage", "capture"],
@@ -257,7 +259,7 @@ export const SERVICES: ServiceDef[] = [
   },
   {
     path: "/api/tech-stack",
-    priceUsd: "0.02",
+    priceUsd: "0.005",
     description:
       "Detect the technologies behind a website: framework (Next.js, Nuxt, Astro, React...), site builder (Webflow, Framer, Lovable, Shopify, WordPress...), hosting/CDN (Vercel, Netlify, Cloudflare...), CSS (Tailwind, Bootstrap), analytics, payments, auth and support tools, with evidence. Fast (1-3 s).",
     tags: ["tech-stack", "technology", "framework", "detection", "wappalyzer", "builtwith", "website", "lead-research"],
@@ -268,7 +270,7 @@ export const SERVICES: ServiceDef[] = [
   },
 {
     path: "/api/brand-kit",
-    priceUsd: "0.03",
+    priceUsd: "0.01",
     description:
       "Get a website's brand kit in one call: the site's own logo (URL plus inline SVG when available, not customer logos), favicon, theme color, color palette ranked by usage, brand CSS variables and fonts, read from its HTML and stylesheets. Fast (1-4 s).",
     tags: ["brand", "logo", "favicon", "colors", "fonts", "branding", "design", "company"],
@@ -279,7 +281,7 @@ export const SERVICES: ServiceDef[] = [
   },
   {
     path: "/api/page-markdown",
-    priceUsd: "0.01",
+    priceUsd: "0.003",
     description:
       "Convert any web page into clean Markdown for LLMs: main content only (no nav, footer, scripts, cookie banners), with headings, lists, links, images, tables and code blocks preserved. Optional maxChars (1,000-200,000, default 50,000). Fast (1-3 s).",
     tags: ["markdown", "scrape", "web", "content", "llm", "reader", "extract", "text"],
@@ -294,7 +296,7 @@ export const SERVICES: ServiceDef[] = [
   },
   {
     path: "/api/meta",
-    priceUsd: "0.005",
+    priceUsd: "0.002",
     description:
       "Get a page's metadata: title, description, canonical URL, language, Open Graph and Twitter card (including preview image), icons, RSS feeds, JSON-LD types, H1s, link and word counts. Fast (under 2 s).",
     tags: ["metadata", "seo", "open-graph", "link-preview", "unfurl", "title", "favicon", "web"],
@@ -304,3 +306,5 @@ export const SERVICES: ServiceDef[] = [
     outputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, openGraph: { type: "object" } } },
   },
 ];
+
+export const SERVICES: ServiceDef[] = [...CORE_SERVICES, ...MICRO.map((m) => m.def)];

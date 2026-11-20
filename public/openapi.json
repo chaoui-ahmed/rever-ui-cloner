@@ -2,9 +2,9 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Rever API",
-    "version": "5.0.0",
-    "summary": "Website intelligence for agents: UI prompts, design tokens, brand kits, screenshots, markdown, metadata, tech stack.",
-    "description": "Takes a screenshot of a public URL and returns a detailed design brief (layout, components, colors, typography, spacing) that a code-generation model can use to rebuild the UI in React + Tailwind. Price $0.25 per successful call. Agents pay with x402 v2 (exact scheme, USDC on Base eip155:8453): the first call returns 402 with a PAYMENT-REQUIRED header; retry with PAYMENT-SIGNATURE. Also accepted: X-Payment with the hash of a direct USDC transfer, or X-Access-Key from a pack bought on the website. Full guide: https://www.aypiai.online/llms-full.txt",
+    "version": "6.0.0",
+    "summary": "Website intelligence for AI agents: 39 pay-per-call endpoints ($0.001 to $0.05) for scraping, SEO, security, DNS, design and crypto due diligence.",
+    "description": "39 website-analysis endpoints for AI agents, priced $0.001 to $0.05 per call: page to markdown/text, metadata, contacts, social links, sitemap, robots.txt, broken links, SEO and AI-readiness audits, security headers, HTTPS, DNS, email security, WHOIS/RDAP, Wayback history, tech stack, trackers, company info, brand kit, design tokens, screenshots, UI-recreation prompts and a crypto project website trust check. All are POST with JSON {\"url\": \"...\"}. Agents pay with x402 v2 (exact scheme, USDC on Base eip155:8453): the first call returns 402 with a PAYMENT-REQUIRED header; retry with PAYMENT-SIGNATURE. You are never charged for a failed call. Full guide: https://www.aypiai.online/llms-full.txt",
     "contact": {
       "name": "Ahmed Chaoui",
       "email": "tahachaoui5@gmail.com",
@@ -190,8 +190,13 @@
     "/design-tokens": {
       "post": {
         "operationId": "getDesignTokens",
-        "summary": "Extract design tokens from a URL",
-        "description": "Color palette with roles, fonts and type scale, spacing, radii, shadows, light/dark mode and a Tailwind theme extension, as JSON. Price: $0.05 per call via x402 (USDC on Base).",
+        "summary": "Extract a website's design tokens as JSON",
+        "description": "Extract a website's design tokens as JSON: color palette with roles (hex), fonts and type scale, spacing, border radii, shadows, light/dark mode, and a ready-to-use Tailwind theme extension. Takes 5-20 s. Price: $0.02 per call via x402 (USDC on Base).",
+        "tags": [
+          "design-tokens",
+          "colors",
+          "palette"
+        ],
         "security": [
           {
             "x402": []
@@ -203,15 +208,18 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "url"
-                ],
                 "properties": {
                   "url": {
                     "type": "string",
-                    "format": "uri"
+                    "description": "Public http(s) URL"
                   }
-                }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://linear.app"
               }
             }
           }
@@ -230,16 +238,36 @@
                     "tokens": {
                       "type": "object"
                     }
+                  },
+                  "required": [
+                    "url",
+                    "tokens"
+                  ]
+                },
+                "example": {
+                  "url": "https://linear.app/",
+                  "tokens": {
+                    "colors": [
+                      {
+                        "hex": "#08090A",
+                        "role": "background",
+                        "usage": "page"
+                      }
+                    ],
+                    "typography": {
+                      "headingFont": "Inter, sans-serif"
+                    },
+                    "mode": "dark"
                   }
                 }
               }
             }
           },
-          "402": {
-            "description": "Payment required (x402): decode PAYMENT-REQUIRED header, retry with PAYMENT-SIGNATURE."
-          },
           "400": {
             "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
           },
           "502": {
             "description": "Upstream failure; not charged."
@@ -247,7 +275,7 @@
         },
         "x-payment-info": {
           "protocol": "x402",
-          "price": "0.05",
+          "price": "0.02",
           "network": "eip155:8453",
           "asset": "USDC"
         }
@@ -255,9 +283,14 @@
     },
     "/screenshot": {
       "post": {
-        "operationId": "takeScreenshot",
-        "summary": "Screenshot a web page",
-        "description": "JPEG screenshot returned as a base64 data URL and a hosted URL. Price: $0.02 per call via x402 (USDC on Base).",
+        "operationId": "getScreenshot",
+        "summary": "Screenshot any public web page",
+        "description": "Screenshot any public web page. Returns a JPEG (base64 data URL plus a hosted URL). Options: width (320-2560, default 1280), height (300-8000, default 900), fullPage (boolean). Takes 3-15 s. Price: $0.01 per call via x402 (USDC on Base).",
+        "tags": [
+          "screenshot",
+          "browser",
+          "render"
+        ],
         "security": [
           {
             "x402": []
@@ -269,28 +302,32 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "url"
-                ],
                 "properties": {
                   "url": {
                     "type": "string",
-                    "format": "uri"
+                    "description": "Public http(s) URL"
                   },
                   "width": {
-                    "type": "integer",
-                    "minimum": 320,
-                    "maximum": 2560
+                    "type": "number",
+                    "description": "Viewport width in px (320-2560)"
                   },
                   "height": {
-                    "type": "integer",
-                    "minimum": 300,
-                    "maximum": 8000
+                    "type": "number",
+                    "description": "Viewport height in px (300-8000)"
                   },
                   "fullPage": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Capture the whole page"
                   }
-                }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://example.com",
+                "width": 1280,
+                "fullPage": false
               }
             }
           }
@@ -308,23 +345,29 @@
                     },
                     "imageUrl": {
                       "type": "string"
-                    },
-                    "width": {
-                      "type": "integer"
-                    },
-                    "bytes": {
-                      "type": "integer"
                     }
-                  }
+                  },
+                  "required": [
+                    "image"
+                  ]
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "image": "data:image/jpeg;base64,...",
+                  "imageUrl": "https://storage.screenshotapi.net/...",
+                  "format": "jpeg",
+                  "width": 1280,
+                  "fullPage": false,
+                  "bytes": 54321
                 }
               }
             }
           },
-          "402": {
-            "description": "Payment required (x402): decode PAYMENT-REQUIRED header, retry with PAYMENT-SIGNATURE."
-          },
           "400": {
             "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
           },
           "502": {
             "description": "Upstream failure; not charged."
@@ -332,7 +375,7 @@
         },
         "x-payment-info": {
           "protocol": "x402",
-          "price": "0.02",
+          "price": "0.01",
           "network": "eip155:8453",
           "asset": "USDC"
         }
@@ -340,9 +383,14 @@
     },
     "/tech-stack": {
       "post": {
-        "operationId": "detectTechStack",
-        "summary": "Detect a website's tech stack",
-        "description": "Framework, site builder, hosting/CDN, CSS, analytics, payments, auth and support tools, with evidence. Price: $0.02 per call via x402 (USDC on Base).",
+        "operationId": "getTechStack",
+        "summary": "Detect the technologies behind a website",
+        "description": "Detect the technologies behind a website: framework (Next.js, Nuxt, Astro, React...), site builder (Webflow, Framer, Lovable, Shopify, WordPress...), hosting/CDN (Vercel, Netlify, Cloudflare...), CSS (Tailwind, Bootstrap), analytics, payments, auth and support tools, with evidence. Fast (1-3 s). Price: $0.005 per call via x402 (USDC on Base).",
+        "tags": [
+          "tech-stack",
+          "technology",
+          "framework"
+        ],
         "security": [
           {
             "x402": []
@@ -354,15 +402,18 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "url"
-                ],
                 "properties": {
                   "url": {
                     "type": "string",
-                    "format": "uri"
+                    "description": "Public http(s) URL"
                   }
-                }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://vercel.com"
               }
             }
           }
@@ -376,32 +427,37 @@
                   "type": "object",
                   "properties": {
                     "technologies": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          },
-                          "category": {
-                            "type": "string"
-                          },
-                          "evidence": {
-                            "type": "string"
-                          }
-                        }
-                      }
+                      "type": "array"
                     }
-                  }
+                  },
+                  "required": [
+                    "technologies"
+                  ]
+                },
+                "example": {
+                  "url": "https://vercel.com/",
+                  "title": "Vercel",
+                  "technologies": [
+                    {
+                      "name": "Next.js",
+                      "category": "framework",
+                      "evidence": "html"
+                    },
+                    {
+                      "name": "Vercel",
+                      "category": "hosting",
+                      "evidence": "header x-vercel-id"
+                    }
+                  ]
                 }
               }
             }
           },
-          "402": {
-            "description": "Payment required (x402): decode PAYMENT-REQUIRED header, retry with PAYMENT-SIGNATURE."
-          },
           "400": {
             "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
           },
           "502": {
             "description": "Upstream failure; not charged."
@@ -409,7 +465,7 @@
         },
         "x-payment-info": {
           "protocol": "x402",
-          "price": "0.02",
+          "price": "0.005",
           "network": "eip155:8453",
           "asset": "USDC"
         }
@@ -418,8 +474,13 @@
     "/brand-kit": {
       "post": {
         "operationId": "getBrandKit",
-        "summary": "Get a website's brand kit",
-        "description": "Get a website's brand kit in one call: the site's own logo (URL plus inline SVG when available, not customer logos), favicon, theme color, color palette ranked by usage, brand CSS variables and fonts, read from its HTML and stylesheets. Fast (1-4 s). Price: $0.03 per call via x402 (USDC on Base).",
+        "summary": "Get a website's brand kit in one call",
+        "description": "Get a website's brand kit in one call: the site's own logo (URL plus inline SVG when available, not customer logos), favicon, theme color, color palette ranked by usage, brand CSS variables and fonts, read from its HTML and stylesheets. Fast (1-4 s). Price: $0.01 per call via x402 (USDC on Base).",
+        "tags": [
+          "brand",
+          "logo",
+          "favicon"
+        ],
         "security": [
           {
             "x402": []
@@ -431,15 +492,18 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "url"
-                ],
                 "properties": {
                   "url": {
                     "type": "string",
-                    "format": "uri"
+                    "description": "Public http(s) URL"
                   }
-                }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
               }
             }
           }
@@ -455,108 +519,42 @@
                     "logo": {
                       "type": "string"
                     },
-                    "logoSvg": {
-                      "type": "string"
-                    },
-                    "favicon": {
-                      "type": "string"
-                    },
                     "colors": {
                       "type": "array"
                     },
                     "fonts": {
                       "type": "array"
-                    },
-                    "cssVariables": {
-                      "type": "object"
                     }
-                  }
-                }
-              }
-            }
-          },
-          "402": {
-            "description": "Payment required (x402)."
-          },
-          "400": {
-            "description": "Invalid URL."
-          },
-          "502": {
-            "description": "Upstream failure; not charged."
-          }
-        },
-        "x-payment-info": {
-          "protocol": "x402",
-          "price": "0.03",
-          "network": "eip155:8453",
-          "asset": "USDC"
-        }
-      }
-    },
-    "/page-markdown": {
-      "post": {
-        "operationId": "getPageMarkdown",
-        "summary": "Convert a page to Markdown",
-        "description": "Convert any web page into clean Markdown for LLMs: main content only (no nav, footer, scripts, cookie banners), with headings, lists, links, images, tables and code blocks preserved. Optional maxChars (1,000-200,000, default 50,000). Fast (1-3 s). Price: $0.01 per call via x402 (USDC on Base).",
-        "security": [
-          {
-            "x402": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "url"
-                ],
-                "properties": {
-                  "url": {
-                    "type": "string",
-                    "format": "uri"
                   },
-                  "maxChars": {
-                    "type": "integer",
-                    "minimum": 1000,
-                    "maximum": 200000
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string"
-                    },
-                    "markdown": {
-                      "type": "string"
-                    },
-                    "chars": {
-                      "type": "integer"
-                    },
-                    "truncated": {
-                      "type": "boolean"
+                  "required": [
+                    "colors",
+                    "fonts"
+                  ]
+                },
+                "example": {
+                  "url": "https://stripe.com/",
+                  "name": "Stripe",
+                  "logo": "https://.../favicon.svg",
+                  "logoSvg": "<svg ...>",
+                  "favicon": "https://stripe.com/favicon.ico",
+                  "colors": [
+                    {
+                      "hex": "#533afd",
+                      "count": 41
                     }
-                  }
+                  ],
+                  "fonts": [
+                    "sohne-var"
+                  ]
                 }
               }
             }
-          },
-          "402": {
-            "description": "Payment required (x402)."
           },
           "400": {
             "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
           },
           "502": {
             "description": "Upstream failure; not charged."
@@ -570,11 +568,16 @@
         }
       }
     },
-    "/meta": {
+    "/page-markdown": {
       "post": {
-        "operationId": "getPageMeta",
-        "summary": "Get page metadata",
-        "description": "Get a page's metadata: title, description, canonical URL, language, Open Graph and Twitter card (including preview image), icons, RSS feeds, JSON-LD types, H1s, link and word counts. Fast (under 2 s). Price: $0.005 per call via x402 (USDC on Base).",
+        "operationId": "getPageMarkdown",
+        "summary": "Convert any web page into clean Markdown for LLMs",
+        "description": "Convert any web page into clean Markdown for LLMs: main content only (no nav, footer, scripts, cookie banners), with headings, lists, links, images, tables and code blocks preserved. Optional maxChars (1,000-200,000, default 50,000). Fast (1-3 s). Price: $0.003 per call via x402 (USDC on Base).",
+        "tags": [
+          "markdown",
+          "scrape",
+          "web"
+        ],
         "security": [
           {
             "x402": []
@@ -586,15 +589,107 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "url"
-                ],
                 "properties": {
                   "url": {
                     "type": "string",
-                    "format": "uri"
+                    "description": "Public http(s) URL"
+                  },
+                  "maxChars": {
+                    "type": "number",
+                    "description": "Max characters returned (1000-200000)"
                   }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://en.wikipedia.org/wiki/HTTP_402",
+                "maxChars": 20000
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "markdown": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "markdown"
+                  ]
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "title": "Example Domain",
+                  "markdown": "# Example Domain\n\nThis domain is for use in illustrative examples...",
+                  "chars": 180,
+                  "truncated": false
                 }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.003",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/meta": {
+      "post": {
+        "operationId": "getMeta",
+        "summary": "Get a page's metadata",
+        "description": "Get a page's metadata: title, description, canonical URL, language, Open Graph and Twitter card (including preview image), icons, RSS feeds, JSON-LD types, H1s, link and word counts. Fast (under 2 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "metadata",
+          "seo",
+          "open-graph"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://vercel.com"
               }
             }
           }
@@ -615,20 +710,376 @@
                     },
                     "openGraph": {
                       "type": "object"
-                    },
-                    "icons": {
-                      "type": "array"
                     }
                   }
+                },
+                "example": {
+                  "url": "https://vercel.com/",
+                  "title": "Vercel",
+                  "description": "...",
+                  "openGraph": {
+                    "image": "https://.../og.png"
+                  },
+                  "icons": [
+                    {
+                      "rel": "icon",
+                      "href": "https://vercel.com/favicon.ico"
+                    }
+                  ]
                 }
               }
             }
           },
+          "400": {
+            "description": "Invalid URL."
+          },
           "402": {
             "description": "Payment required (x402)."
           },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/contacts": {
+      "post": {
+        "operationId": "getContacts",
+        "summary": "Extract contact details from a web page",
+        "description": "Extract contact details from a web page: email addresses (including mailto links and [at]-obfuscated ones), phone numbers (tel links and visible numbers) and postal addresses from structured data. Fast (1-3 s). Price: $0.003 per call via x402 (USDC on Base).",
+        "tags": [
+          "contacts",
+          "email",
+          "phone"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "emails": {},
+                    "phones": {},
+                    "addresses": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "emails": [
+                    "hello@example.com"
+                  ],
+                  "phones": [
+                    "+1 415 555 0100"
+                  ],
+                  "addresses": []
+                }
+              }
+            }
+          },
           "400": {
             "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.003",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/social-links": {
+      "post": {
+        "operationId": "getSocialLinks",
+        "summary": "Find a website's social media profiles",
+        "description": "Find a website's social media profiles: X/Twitter, LinkedIn, Facebook, Instagram, YouTube, TikTok, GitHub, Discord, Telegram, Medium, Reddit, Threads, Bluesky, Farcaster and more, from its links. Fast (1-3 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "social",
+          "twitter",
+          "linkedin"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "profiles": {},
+                    "count": {}
+                  }
+                },
+                "example": {
+                  "url": "https://stripe.com/",
+                  "profiles": {
+                    "x": [
+                      "https://twitter.com/stripe"
+                    ],
+                    "linkedin": [
+                      "https://www.linkedin.com/company/stripe"
+                    ]
+                  },
+                  "count": 2
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/links": {
+      "post": {
+        "operationId": "getLinks",
+        "summary": "List every link on a web page with its anchor text, split into internal and external, with",
+        "description": "List every link on a web page with its anchor text, split into internal and external, with nofollow flags and the external domains linked to. Up to 500 links. Fast (1-3 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "links",
+          "crawl",
+          "scrape"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "internal": {},
+                    "external": {},
+                    "externalDomains": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "internal": [
+                    {
+                      "href": "https://example.com/about",
+                      "text": "About"
+                    }
+                  ],
+                  "external": [
+                    {
+                      "href": "https://iana.org/",
+                      "text": "More",
+                      "nofollow": false
+                    }
+                  ],
+                  "externalDomains": [
+                    "iana.org"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/broken-links": {
+      "post": {
+        "operationId": "getBrokenLinks",
+        "summary": "Check the links on a web page for broken ones",
+        "description": "Check the links on a web page for broken ones: requests up to 40 unique links in parallel and reports each status code, broken links (4xx/5xx/unreachable) and redirects. Takes 2-10 s. Price: $0.005 per call via x402 (USDC on Base).",
+        "tags": [
+          "broken-links",
+          "link-checker",
+          "seo"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  },
+                  "limit": {
+                    "type": "number",
+                    "description": "Max links to check (1-40, default 40)"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "checked": {},
+                    "broken": {},
+                    "redirected": {},
+                    "ok": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "checked": 12,
+                  "broken": [
+                    {
+                      "href": "https://example.com/old",
+                      "status": 404
+                    }
+                  ],
+                  "redirected": 2,
+                  "ok": 9
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
           },
           "502": {
             "description": "Upstream failure; not charged."
@@ -637,6 +1088,2421 @@
         "x-payment-info": {
           "protocol": "x402",
           "price": "0.005",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/sitemap": {
+      "post": {
+        "operationId": "getSitemap",
+        "summary": "Get every URL a website lists in its XML sitemaps",
+        "description": "Get every URL a website lists in its XML sitemaps: finds sitemaps via robots.txt and common paths, follows sitemap indexes (up to 5 children) and returns URLs with lastmod dates. Optional limit (default 1000, max 5000). Takes 1-6 s. Price: $0.003 per call via x402 (USDC on Base).",
+        "tags": [
+          "sitemap",
+          "crawl",
+          "urls"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  },
+                  "limit": {
+                    "type": "number",
+                    "description": "Max URLs returned (1-5000, default 1000)"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "sitemaps": {},
+                    "total": {},
+                    "urls": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "sitemaps": [
+                    "https://example.com/sitemap.xml"
+                  ],
+                  "total": 120,
+                  "urls": [
+                    {
+                      "loc": "https://example.com/pricing",
+                      "lastmod": "2026-10-01"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.003",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/robots": {
+      "post": {
+        "operationId": "getRobots",
+        "summary": "Read and parse a website's robots.txt",
+        "description": "Read and parse a website's robots.txt: user-agent groups with allow/disallow rules, declared sitemaps, and which AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot...) are blocked from the whole site. Fast (under 2 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "robots.txt",
+          "crawler",
+          "ai-bots"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "exists": {},
+                    "sitemaps": {},
+                    "aiBots": {},
+                    "groups": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "exists": true,
+                  "sitemaps": [
+                    "https://example.com/sitemap.xml"
+                  ],
+                  "aiBots": {
+                    "GPTBot": "blocked",
+                    "ClaudeBot": "allowed"
+                  },
+                  "groups": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/security-headers": {
+      "post": {
+        "operationId": "getSecurityHeaders",
+        "summary": "Grade a website's HTTP security headers (A-F)",
+        "description": "Grade a website's HTTP security headers (A-F): HSTS, Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP, plus leaked server/version headers, with a fix hint for each missing one. Fast (under 2 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "security",
+          "headers",
+          "hsts"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "grade": {},
+                    "score": {},
+                    "missing": {},
+                    "present": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "grade": "C",
+                  "score": 57,
+                  "missing": [
+                    "content-security-policy"
+                  ],
+                  "present": {
+                    "strict-transport-security": "max-age=31536000"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/https-check": {
+      "post": {
+        "operationId": "getHttpsCheck",
+        "summary": "Check a site's HTTPS setup",
+        "description": "Check a site's HTTPS setup: whether http:// redirects to https://, HSTS and preload readiness, final URL, and mixed content (insecure http:// scripts, styles, images or iframes on the https page). Fast (1-3 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "https",
+          "ssl",
+          "tls"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "httpRedirectsToHttps": {},
+                    "hsts": {},
+                    "hstsPreloadReady": {},
+                    "mixedContent": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "httpRedirectsToHttps": true,
+                  "hsts": "max-age=31536000",
+                  "hstsPreloadReady": false,
+                  "mixedContent": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/redirects": {
+      "post": {
+        "operationId": "getRedirects",
+        "summary": "Trace a URL's full redirect chain hop by hop (up to 10)",
+        "description": "Trace a URL's full redirect chain hop by hop (up to 10): status code, Location and server for each hop, final URL, and loop detection. Useful for link unshortening and SEO migrations. Fast (1-3 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "redirects",
+          "redirect-chain",
+          "unshorten"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "hops": {},
+                    "finalUrl": {},
+                    "count": {}
+                  }
+                },
+                "example": {
+                  "url": "http://stripe.com",
+                  "hops": [
+                    {
+                      "url": "http://stripe.com/",
+                      "status": 301,
+                      "location": "https://stripe.com/"
+                    },
+                    {
+                      "url": "https://stripe.com/",
+                      "status": 200
+                    }
+                  ],
+                  "finalUrl": "https://stripe.com/",
+                  "count": 1
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/headers": {
+      "post": {
+        "operationId": "getHeaders",
+        "summary": "Get the raw HTTP response headers of any URL, with status code, final URL after redirects ",
+        "description": "Get the raw HTTP response headers of any URL, with status code, final URL after redirects and response time. Fast (under 2 s). Price: $0.001 per call via x402 (USDC on Base).",
+        "tags": [
+          "http",
+          "headers",
+          "debug"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "status": {},
+                    "ms": {},
+                    "headers": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "status": 200,
+                  "ms": 120,
+                  "headers": {
+                    "content-type": "text/html",
+                    "server": "cloudflare"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.001",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/status": {
+      "post": {
+        "operationId": "getStatus",
+        "summary": "Is this website up? Returns up/down, HTTP status, response time in ms, final URL and conte",
+        "description": "Is this website up? Returns up/down, HTTP status, response time in ms, final URL and content type. Cheapest uptime check for agents. Fast (under 2 s). Price: $0.001 per call via x402 (USDC on Base).",
+        "tags": [
+          "uptime",
+          "status",
+          "monitoring"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "up": {},
+                    "status": {},
+                    "ms": {},
+                    "finalUrl": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "up": true,
+                  "status": 200,
+                  "ms": 98,
+                  "finalUrl": "https://example.com/"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.001",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/language": {
+      "post": {
+        "operationId": "getLanguage",
+        "summary": "Detect a web page's language",
+        "description": "Detect a web page's language: html lang attribute, Content-Language header, og:locale, hreflang alternates (other language versions) and a guess from the visible text. Fast (1-3 s). Price: $0.001 per call via x402 (USDC on Base).",
+        "tags": [
+          "language",
+          "locale",
+          "i18n"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "declared": {},
+                    "detected": {},
+                    "hreflang": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "declared": "en",
+                  "detected": "en",
+                  "hreflang": [
+                    {
+                      "lang": "fr",
+                      "href": "https://example.com/fr"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.001",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/text-stats": {
+      "post": {
+        "operationId": "getTextStats",
+        "summary": "Text statistics for a web page's visible content",
+        "description": "Text statistics for a web page's visible content: word, sentence and paragraph counts, reading time, Flesch reading-ease score and top keywords (stop words removed). Fast (1-3 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "word-count",
+          "readability",
+          "keywords"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "words": {},
+                    "sentences": {},
+                    "readingTimeMin": {},
+                    "fleschReadingEase": {},
+                    "topKeywords": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "words": 830,
+                  "sentences": 41,
+                  "readingTimeMin": 4,
+                  "fleschReadingEase": 58.2,
+                  "topKeywords": [
+                    {
+                      "word": "payments",
+                      "count": 14
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/structured-data": {
+      "post": {
+        "operationId": "getStructuredData",
+        "summary": "Extract all structured data from a web page",
+        "description": "Extract all structured data from a web page: every JSON-LD block parsed (Organization, Product, Article, FAQ, Breadcrumb, Event...), microdata item types and RDFa types. Fast (1-3 s). Price: $0.003 per call via x402 (USDC on Base).",
+        "tags": [
+          "structured-data",
+          "json-ld",
+          "schema.org"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "types": {},
+                    "jsonLd": {},
+                    "microdata": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "types": [
+                    "Organization",
+                    "WebSite"
+                  ],
+                  "jsonLd": [
+                    {
+                      "@type": "Organization",
+                      "name": "Example"
+                    }
+                  ],
+                  "microdata": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.003",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/og-image": {
+      "post": {
+        "operationId": "getOgImage",
+        "summary": "Get the social preview image of a page (what shows when a link is shared)",
+        "description": "Get the social preview image of a page (what shows when a link is shared): og:image and twitter:image with declared size and alt text, or the first large page image as a fallback. Fast (under 2 s). Price: $0.001 per call via x402 (USDC on Base).",
+        "tags": [
+          "og-image",
+          "open-graph",
+          "link-preview"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "image": {},
+                    "width": {},
+                    "height": {},
+                    "alt": {},
+                    "source": {}
+                  }
+                },
+                "example": {
+                  "url": "https://stripe.com/",
+                  "image": "https://images.stripeassets.com/.../og.png",
+                  "width": "1200",
+                  "height": "630",
+                  "alt": null,
+                  "source": "og:image"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.001",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/feeds": {
+      "post": {
+        "operationId": "getFeeds",
+        "summary": "Find a website's RSS/Atom feeds (declared links and common paths like /feed and /rss.xml) ",
+        "description": "Find a website's RSS/Atom feeds (declared links and common paths like /feed and /rss.xml) and return the latest items from the first one: title, link, date, summary. Takes 1-5 s. Price: $0.003 per call via x402 (USDC on Base).",
+        "tags": [
+          "rss",
+          "atom",
+          "feed"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  },
+                  "limit": {
+                    "type": "number",
+                    "description": "Max items (1-50, default 20)"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "feeds": {},
+                    "feedTitle": {},
+                    "items": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "feeds": [
+                    "https://example.com/feed.xml"
+                  ],
+                  "feedTitle": "Example Blog",
+                  "items": [
+                    {
+                      "title": "Hello",
+                      "link": "https://example.com/hello",
+                      "date": "2026-11-01"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.003",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/images": {
+      "post": {
+        "operationId": "getImages",
+        "summary": "List the images on a web page with absolute URL, alt text, declared width/height and lazy-",
+        "description": "List the images on a web page with absolute URL, alt text, declared width/height and lazy-loading, plus counts of images missing alt text (accessibility/SEO). Up to 300 images. Fast (1-3 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "images",
+          "alt-text",
+          "accessibility"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "count": {},
+                    "missingAlt": {},
+                    "images": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "count": 14,
+                  "missingAlt": 3,
+                  "images": [
+                    {
+                      "src": "https://example.com/hero.png",
+                      "alt": "Dashboard",
+                      "width": "1200",
+                      "height": "800",
+                      "loading": "lazy"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/headings": {
+      "post": {
+        "operationId": "getHeadings",
+        "summary": "Get the heading outline of a web page (H1-H6 in document order) with counts per level and ",
+        "description": "Get the heading outline of a web page (H1-H6 in document order) with counts per level and structure warnings (no H1, several H1s, skipped levels). Fast (under 2 s). Price: $0.001 per call via x402 (USDC on Base).",
+        "tags": [
+          "headings",
+          "outline",
+          "h1"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "outline": {},
+                    "counts": {},
+                    "warnings": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "outline": [
+                    {
+                      "level": 1,
+                      "text": "Example Domain"
+                    }
+                  ],
+                  "counts": {
+                    "h1": 1,
+                    "h2": 0
+                  },
+                  "warnings": []
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.001",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/seo-audit": {
+      "post": {
+        "operationId": "getSeoAudit",
+        "summary": "Quick on-page SEO audit with a 0-100 score",
+        "description": "Quick on-page SEO audit with a 0-100 score: title and meta description length, H1, canonical, lang, viewport, noindex, Open Graph, image alt text, structured data, HTTPS, robots.txt and sitemap, with a fix for each failed check. Takes 2-5 s. Price: $0.005 per call via x402 (USDC on Base).",
+        "tags": [
+          "seo",
+          "audit",
+          "on-page"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "score": {},
+                    "grade": {},
+                    "failed": {},
+                    "passed": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "score": 72,
+                  "grade": "C",
+                  "failed": [
+                    {
+                      "check": "meta description",
+                      "fix": "Add a 70-160 character meta description"
+                    }
+                  ],
+                  "passed": [
+                    "title",
+                    "h1"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.005",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/favicon": {
+      "post": {
+        "operationId": "getFavicon",
+        "summary": "Get the best favicon/icon for a website",
+        "description": "Get the best favicon/icon for a website: the largest declared icon (apple-touch-icon, SVG, sized PNGs), all candidates with sizes, and whether /favicon.ico exists. Fast (under 2 s). Price: $0.001 per call via x402 (USDC on Base).",
+        "tags": [
+          "favicon",
+          "icon",
+          "logo"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "best": {},
+                    "candidates": {}
+                  }
+                },
+                "example": {
+                  "url": "https://stripe.com/",
+                  "best": "https://stripe.com/apple-touch-icon.png",
+                  "candidates": [
+                    {
+                      "rel": "icon",
+                      "href": "https://stripe.com/favicon.ico",
+                      "sizes": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.001",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/dns": {
+      "post": {
+        "operationId": "getDns",
+        "summary": "DNS lookup for a website's domain",
+        "description": "DNS lookup for a website's domain: A, AAAA, CNAME, MX, NS, TXT and CAA records, via Cloudflare DNS-over-HTTPS. Pass a URL or bare hostname. Fast (under 2 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "dns",
+          "domain",
+          "mx"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "host": {},
+                    "A": {},
+                    "MX": {},
+                    "NS": {},
+                    "TXT": {}
+                  }
+                },
+                "example": {
+                  "host": "stripe.com",
+                  "A": [
+                    "1.2.3.4"
+                  ],
+                  "MX": [
+                    "10 aspmx.l.google.com."
+                  ],
+                  "NS": [
+                    "ns-1.awsdns.com."
+                  ],
+                  "TXT": [
+                    "v=spf1 ..."
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/email-security": {
+      "post": {
+        "operationId": "getEmailSecurity",
+        "summary": "Check a domain's email setup and spoofing protection",
+        "description": "Check a domain's email setup and spoofing protection: MX records and email provider (Google Workspace, Microsoft 365, Zoho...), SPF, DMARC policy and common DKIM selectors, with a 0-100 score. Fast (1-3 s). Price: $0.003 per call via x402 (USDC on Base).",
+        "tags": [
+          "email",
+          "spf",
+          "dmarc"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "domain": {},
+                    "provider": {},
+                    "spf": {},
+                    "dmarc": {},
+                    "dkimSelectors": {},
+                    "score": {}
+                  }
+                },
+                "example": {
+                  "domain": "stripe.com",
+                  "provider": "Google Workspace",
+                  "spf": "v=spf1 include:_spf.google.com ~all",
+                  "dmarc": {
+                    "record": "v=DMARC1; p=reject",
+                    "policy": "reject"
+                  },
+                  "dkimSelectors": [
+                    "google"
+                  ],
+                  "score": 100
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.003",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/domain-whois": {
+      "post": {
+        "operationId": "getDomainWhois",
+        "summary": "Domain registration data via RDAP (modern WHOIS)",
+        "description": "Domain registration data via RDAP (modern WHOIS): registrar, creation, update and expiry dates, domain age in days, status flags and nameservers. Useful for trust and fraud checks. Takes 1-4 s. Price: $0.003 per call via x402 (USDC on Base).",
+        "tags": [
+          "whois",
+          "rdap",
+          "domain"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "domain": {},
+                    "registrar": {},
+                    "created": {},
+                    "expires": {},
+                    "ageDays": {},
+                    "nameservers": {}
+                  }
+                },
+                "example": {
+                  "domain": "stripe.com",
+                  "registrar": "SafeNames Ltd.",
+                  "created": "1995-09-12T04:00:00Z",
+                  "expires": "2031-09-11T04:00:00Z",
+                  "ageDays": 11393,
+                  "nameservers": [
+                    "ns-cloud-a1.googledomains.com"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.003",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/ai-readiness": {
+      "post": {
+        "operationId": "getAiReadiness",
+        "summary": "How readable is a website for AI agents? Checks llms.txt and llms-full.txt, AI crawler rul",
+        "description": "How readable is a website for AI agents? Checks llms.txt and llms-full.txt, AI crawler rules in robots.txt, sitemap, JSON-LD, whether content renders without JavaScript, OpenAPI, MCP and x402 manifests, with a 0-100 score and fixes. Takes 2-5 s. Price: $0.003 per call via x402 (USDC on Base).",
+        "tags": [
+          "ai-readiness",
+          "llms.txt",
+          "geo"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "score": {},
+                    "grade": {},
+                    "llmsTxt": {},
+                    "aiBotsBlocked": {},
+                    "serverRendered": {},
+                    "failed": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "score": 45,
+                  "grade": "D",
+                  "llmsTxt": false,
+                  "aiBotsBlocked": [
+                    "GPTBot"
+                  ],
+                  "serverRendered": true,
+                  "failed": [
+                    {
+                      "check": "llms.txt",
+                      "fix": "Publish /llms.txt"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.003",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/page-text": {
+      "post": {
+        "operationId": "getPageText",
+        "summary": "Get the plain visible text of a web page (no HTML, scripts or styles), whitespace-normaliz",
+        "description": "Get the plain visible text of a web page (no HTML, scripts or styles), whitespace-normalized, with title and word count. Optional maxChars (1,000-200,000, default 50,000). Fast (1-3 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "text",
+          "scrape",
+          "extract"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  },
+                  "maxChars": {
+                    "type": "number",
+                    "description": "Max characters (1000-200000)"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "title": {},
+                    "text": {},
+                    "words": {},
+                    "truncated": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "title": "Example Domain",
+                  "text": "Example Domain This domain is for use in illustrative examples...",
+                  "words": 28,
+                  "truncated": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/forms": {
+      "post": {
+        "operationId": "getForms",
+        "summary": "List the forms on a web page",
+        "description": "List the forms on a web page: action URL, method, fields (name, type, label, required) and a guess of each form's purpose (login, signup, newsletter, search, contact, payment). Fast (1-3 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "forms",
+          "inputs",
+          "scrape"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "forms": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "forms": [
+                    {
+                      "purpose": "newsletter",
+                      "action": "https://example.com/subscribe",
+                      "method": "post",
+                      "fields": [
+                        {
+                          "name": "email",
+                          "type": "email",
+                          "required": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/trackers": {
+      "post": {
+        "operationId": "getTrackers",
+        "summary": "Detect analytics, ad and tracking scripts on a web page (Google Analytics/Tag Manager, Met",
+        "description": "Detect analytics, ad and tracking scripts on a web page (Google Analytics/Tag Manager, Meta Pixel, TikTok, LinkedIn, Hotjar, Clarity, Segment, Mixpanel, HubSpot, Plausible...), cookie-consent tools and all third-party script domains. Fast (1-3 s). Price: $0.003 per call via x402 (USDC on Base).",
+        "tags": [
+          "trackers",
+          "privacy",
+          "gdpr"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "trackers": {},
+                    "consentManager": {},
+                    "thirdPartyDomains": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "trackers": [
+                    {
+                      "name": "Google Tag Manager",
+                      "category": "tag-manager"
+                    }
+                  ],
+                  "consentManager": "OneTrust",
+                  "thirdPartyDomains": [
+                    "googletagmanager.com"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.003",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/company-info": {
+      "post": {
+        "operationId": "getCompanyInfo",
+        "summary": "Company profile from its website in one call",
+        "description": "Company profile from its website in one call: name, description, logo, founding date, address, phones, emails, social profiles and links to about/contact/careers/pricing pages, from structured data and the page. Takes 1-4 s. Price: $0.005 per call via x402 (USDC on Base).",
+        "tags": [
+          "company",
+          "enrichment",
+          "firmographics"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "name": {},
+                    "description": {},
+                    "logo": {},
+                    "emails": {},
+                    "socials": {},
+                    "pages": {}
+                  }
+                },
+                "example": {
+                  "url": "https://stripe.com/",
+                  "name": "Stripe",
+                  "description": "Financial infrastructure for the internet",
+                  "logo": "https://stripe.com/img/logo.png",
+                  "emails": [],
+                  "socials": {
+                    "x": [
+                      "https://twitter.com/stripe"
+                    ]
+                  },
+                  "pages": {
+                    "careers": "https://stripe.com/jobs"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.005",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/key-pages": {
+      "post": {
+        "operationId": "getKeyPages",
+        "summary": "Find the important pages of a website from its home page links",
+        "description": "Find the important pages of a website from its home page links: about, contact, pricing, careers, blog, docs, login, signup, team, privacy and terms. Saves agents from crawling. Fast (1-3 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "navigation",
+          "pages",
+          "crawl"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "pages": {}
+                  }
+                },
+                "example": {
+                  "url": "https://stripe.com/",
+                  "pages": {
+                    "pricing": "https://stripe.com/pricing",
+                    "docs": "https://docs.stripe.com/",
+                    "careers": "https://stripe.com/jobs"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/page-weight": {
+      "post": {
+        "operationId": "getPageWeight",
+        "summary": "Page performance basics without a browser",
+        "description": "Page performance basics without a browser: time to first byte, HTML size, compression, caching headers, CDN, and counts of scripts, stylesheets, images, fonts and iframes, with inline script/style size. Fast (1-3 s). Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "performance",
+          "page-speed",
+          "ttfb"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {},
+                    "ttfbMs": {},
+                    "htmlKb": {},
+                    "compression": {},
+                    "scripts": {},
+                    "stylesheets": {},
+                    "images": {},
+                    "cacheControl": {}
+                  }
+                },
+                "example": {
+                  "url": "https://example.com/",
+                  "ttfbMs": 110,
+                  "htmlKb": 48.2,
+                  "compression": "br",
+                  "scripts": 12,
+                  "stylesheets": 3,
+                  "images": 20,
+                  "cacheControl": "max-age=0"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/wayback": {
+      "post": {
+        "operationId": "getWayback",
+        "summary": "Internet Archive history of a website",
+        "description": "Internet Archive history of a website: first and latest Wayback Machine snapshot (date and link) and how long the site has existed online. Useful for trust checks and research. Takes 1-5 s. Price: $0.002 per call via x402 (USDC on Base).",
+        "tags": [
+          "wayback-machine",
+          "archive",
+          "history"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Public http(s) URL"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://stripe.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "host": {},
+                    "first": {},
+                    "last": {},
+                    "ageDays": {}
+                  }
+                },
+                "example": {
+                  "host": "stripe.com",
+                  "first": {
+                    "date": "2010-09-29",
+                    "url": "https://web.archive.org/web/20100929.../stripe.com"
+                  },
+                  "last": {
+                    "date": "2026-11-19",
+                    "url": "https://web.archive.org/web/..."
+                  },
+                  "ageDays": 5895
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.002",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/crypto-site-check": {
+      "post": {
+        "operationId": "getCryptoSiteCheck",
+        "summary": "Due-diligence check of a crypto project's website before you buy or interact",
+        "description": "Due-diligence check of a crypto project's website before you buy or interact: domain age (RDAP) and first archive date, HTTPS/security, socials (X, Telegram, Discord, GitHub), docs/whitepaper, team page, audit firms mentioned, contract addresses on the page (optionally verifies yours), scam phrases and wallet-drainer signals (seed-phrase inputs), template/free-hosting signs. Returns a 0-100 trust score, red and green flags. Heuristics, not financial advice. Takes 3-8 s. Price: $0.02 per call via x402 (USDC on Base).",
+        "tags": [
+          "crypto",
+          "token",
+          "scam-check"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "description": "Project website (public http(s) URL)"
+                  },
+                  "contract": {
+                    "type": "string",
+                    "description": "Optional token contract address to verify it is published on the site"
+                  }
+                },
+                "required": [
+                  "url"
+                ]
+              },
+              "example": {
+                "url": "https://uniswap.org",
+                "contract": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "score": {
+                      "type": "number"
+                    },
+                    "verdict": {
+                      "type": "string"
+                    },
+                    "redFlags": {
+                      "type": "array"
+                    },
+                    "greenFlags": {
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "score",
+                    "verdict"
+                  ]
+                },
+                "example": {
+                  "url": "https://uniswap.org/",
+                  "score": 86,
+                  "verdict": "low risk signals",
+                  "domainAgeDays": 2400,
+                  "firstArchived": "2018-11-02",
+                  "socials": {
+                    "x": [
+                      "https://x.com/Uniswap"
+                    ],
+                    "github": [
+                      "https://github.com/Uniswap"
+                    ]
+                  },
+                  "auditsMentioned": [
+                    "openzeppelin"
+                  ],
+                  "contractsOnPage": [],
+                  "contractListed": null,
+                  "redFlags": [],
+                  "greenFlags": [
+                    "Domain older than 1 year",
+                    "GitHub linked"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.02",
           "network": "eip155:8453",
           "asset": "USDC"
         }
@@ -671,6 +3537,6 @@
     "scheme": "exact",
     "network": "eip155:8453",
     "asset": "USDC",
-    "price": "0.25"
+    "price": "0.05"
   }
 }

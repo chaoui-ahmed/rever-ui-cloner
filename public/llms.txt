@@ -1,25 +1,72 @@
 # Rever
 
-> Rever turns a website URL into a detailed, ready-to-paste prompt for recreating that site's UI with an AI code generator (Lovable, v0, Bolt, Claude, Cursor). It screenshots the page and has a vision model describe the layout, sections, components, colors, typography and spacing as build instructions. Use it when a user asks to clone, copy, rebuild or get inspired by an existing website's design.
+> Rever is a pay-per-call toolbox of 39 website-intelligence endpoints for AI agents: give it a URL, get JSON back. Read pages as markdown or text, extract contacts, socials, metadata, sitemaps and structured data, audit SEO, AI-readiness, security headers, HTTPS and email security, look up DNS, WHOIS and Wayback history, detect tech stacks and trackers, check whether a crypto project's website looks legit, and turn a site's design into tokens, brand kits, screenshots or a prompt to rebuild its UI.
 
-No account needed. AI agents pay per request ($0.005 to $0.25) in USDC on Base with the standard x402 protocol: any x402 client (e.g. `@x402/fetch`, Coinbase AgentKit) pays automatically. People buy a pack of generations by card on the website.
+No account needed. AI agents pay per request ($0.001 to $0.05) in USDC on Base with the standard x402 protocol: any x402 client (e.g. `@x402/fetch`, Coinbase AgentKit) pays automatically. People buy a pack of generations by card on the website.
 
-## What you get
+## How it works
 
-- Input: one public `http(s)` URL.
-- Output: JSON `{ "prompt": "...", "url": "..." }`, a plain-text design brief (not code). Feed it to a code model to generate React + Tailwind.
-- Typical latency: 10–30 s.
-- Limits: renders what a normal browser sees after load (top 1280×3200 px); pages behind logins or heavy bot protection may fail. You are only charged when a prompt is returned.
+- Every endpoint: `POST` with JSON `{"url": "https://..."}` (some take an extra option, see the OpenAPI spec). Response: JSON.
+- Most answer in 1-3 s. You are only charged when the call succeeds.
 
-## Services (all `POST`, JSON body `{"url": "https://..."}`, paid per call with x402)
+## Services (39, all paid per call with x402)
 
-- `/api/generate-prompt` ($0.25): detailed prompt to recreate a site's UI with a code model
-- `/api/design-tokens` ($0.05): color palette with roles, fonts and type scale, spacing, radii, shadows, Tailwind theme, as JSON
-- `/api/screenshot` ($0.02): JPEG screenshot of any page (options: `width`, `height`, `fullPage`)
-- `/api/tech-stack` ($0.02): framework, site builder, hosting/CDN, CSS, analytics, payments and auth tools used by a site, with evidence
-- `/api/brand-kit` ($0.03): the site's own logo (URL + inline SVG), favicon, theme color, color palette, brand CSS variables and fonts
-- `/api/page-markdown` ($0.01): main content of a page as clean Markdown for LLMs (optional `maxChars`)
-- `/api/meta` ($0.005): title, description, canonical, Open Graph/Twitter card, icons, feeds, JSON-LD types, H1s, link counts
+### Read a page
+
+- `/api/page-markdown` ($0.003): Convert any web page into clean Markdown for LLMs
+- `/api/page-text` ($0.002): Get the plain visible text of a web page (no HTML, scripts or styles), whitespace-normalized, with title and word count
+- `/api/meta` ($0.002): Get a page's metadata
+- `/api/links` ($0.002): List every link on a web page with its anchor text, split into internal and external, with nofollow flags and the external domains linked to
+- `/api/images` ($0.002): List the images on a web page with absolute URL, alt text, declared width/height and lazy-loading, plus counts of images missing alt text (accessibility/SEO)
+- `/api/headings` ($0.001): Get the heading outline of a web page (H1-H6 in document order) with counts per level and structure warnings (no H1, several H1s, skipped levels)
+- `/api/structured-data` ($0.003): Extract all structured data from a web page
+- `/api/og-image` ($0.001): Get the social preview image of a page (what shows when a link is shared)
+- `/api/favicon` ($0.001): Get the best favicon/icon for a website
+- `/api/forms` ($0.002): List the forms on a web page
+- `/api/feeds` ($0.003): Find a website's RSS/Atom feeds (declared links and common paths like /feed and /rss.xml) and return the latest items from the first one
+- `/api/key-pages` ($0.002): Find the important pages of a website from its home page links
+- `/api/language` ($0.001): Detect a web page's language
+- `/api/text-stats` ($0.002): Text statistics for a web page's visible content
+
+### Companies and leads
+
+- `/api/company-info` ($0.005): Company profile from its website in one call
+- `/api/contacts` ($0.003): Extract contact details from a web page
+- `/api/social-links` ($0.002): Find a website's social media profiles
+- `/api/tech-stack` ($0.005): Detect the technologies behind a website
+- `/api/trackers` ($0.003): Detect analytics, ad and tracking scripts on a web page (Google Analytics/Tag Manager, Meta Pixel, TikTok, LinkedIn, Hotjar, Clarity, Segment, Mixpanel, HubSpot, Plausible...), cookie-consent tools and all third-party script domains
+
+### SEO and site audits
+
+- `/api/seo-audit` ($0.005): Quick on-page SEO audit with a 0-100 score
+- `/api/ai-readiness` ($0.003): How readable is a website for AI agents? Checks llms.txt and llms-full.txt, AI crawler rules in robots.txt, sitemap, JSON-LD, whether content renders without JavaScript, OpenAPI, MCP and x402 manifests, with a 0-100 score and fixes
+- `/api/broken-links` ($0.005): Check the links on a web page for broken ones
+- `/api/sitemap` ($0.003): Get every URL a website lists in its XML sitemaps
+- `/api/robots` ($0.002): Read and parse a website's robots.txt
+- `/api/page-weight` ($0.002): Page performance basics without a browser
+- `/api/redirects` ($0.002): Trace a URL's full redirect chain hop by hop (up to 10)
+
+### Security, domain and network
+
+- `/api/security-headers` ($0.002): Grade a website's HTTP security headers (A-F)
+- `/api/https-check` ($0.002): Check a site's HTTPS setup
+- `/api/dns` ($0.002): DNS lookup for a website's domain
+- `/api/email-security` ($0.003): Check a domain's email setup and spoofing protection
+- `/api/domain-whois` ($0.003): Domain registration data via RDAP (modern WHOIS)
+- `/api/wayback` ($0.002): Internet Archive history of a website
+- `/api/headers` ($0.001): Get the raw HTTP response headers of any URL, with status code, final URL after redirects and response time
+- `/api/status` ($0.001): Is this website up? Returns up/down, HTTP status, response time in ms, final URL and content type
+
+### Crypto
+
+- `/api/crypto-site-check` ($0.02): Due-diligence check of a crypto project's website before you buy or interact
+
+### Design and visuals
+
+- `/api/generate-prompt` ($0.05): Turn any public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model such as Lovable, v0, Claude or Cursor
+- `/api/design-tokens` ($0.02): Extract a website's design tokens as JSON
+- `/api/brand-kit` ($0.01): Get a website's brand kit in one call
+- `/api/screenshot` ($0.01): Screenshot any public web page
 
 ## API
 
@@ -30,11 +77,11 @@ No account needed. AI agents pay per request ($0.005 to $0.25) in USDC on Base w
 
 ## Payment (x402)
 
-1. Call the endpoint without payment → HTTP 402 with a `PAYMENT-REQUIRED` header (x402 v2): scheme `exact`, network `eip155:8453` (Base), asset USDC, amount `250000` ($0.25).
+1. Call the endpoint without payment → HTTP 402 with a `PAYMENT-REQUIRED` header (x402 v2): scheme `exact`, network `eip155:8453` (Base), asset USDC, the amount of the endpoint (e.g. `1000` = $0.001).
 2. Your x402 client signs a USDC authorization (gasless for you) and retries with the `PAYMENT-SIGNATURE` header.
-3. You get the prompt, plus a `PAYMENT-RESPONSE` header with the settlement receipt.
+3. You get the JSON result, plus a `PAYMENT-RESPONSE` header with the settlement receipt.
 
-Other ways to pay: send 0.25 USDC on Base to the `payTo` address and retry with `X-Payment: <transaction hash>`, or use a pack key in `X-Access-Key`.
+Other ways to pay: for `/api/generate-prompt` only: send 0.05 USDC on Base to the `payTo` address and retry with `X-Payment: <transaction hash>`, or use a pack key in `X-Access-Key`.
 
 ## Tools
 

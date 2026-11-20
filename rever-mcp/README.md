@@ -25,7 +25,7 @@ Add it to your client config (Claude Desktop: `claude_desktop_config.json`):
 
 ## Paying
 
-Each call costs $0.25 in USDC on Base. The first call without payment returns the address and amount. Pay, then call again with `payment_tx` set to the transaction hash (single use).
+Each call costs $0.05 in USDC on Base. The first call without payment returns the address and amount. Pay, then call again with `payment_tx` set to the transaction hash (single use).
 
 Optional environment variables:
 

@@ -21,6 +21,9 @@ export const corsHeaders: Record<string, string> = {
   "Access-Control-Expose-Headers": "x-payment-response, payment-required, payment-response",
 };
 
+/** An upstream (target site, screenshot or model) failure: answered with 502, payment cancelled. */
+export class UpstreamError extends Error {}
+
 export const json = (body: unknown, status = 200, extra: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
     status,
@@ -29,8 +32,8 @@ export const json = (body: unknown, status = 200, extra: Record<string, string> 
 
 // ---------- Agent payments: USDC on Base ----------
 
-export const AGENT_PRICE_USD = "0.25";
-export const AGENT_PRICE_UNITS = 250_000n; // 0.25 USDC (6 decimals)
+export const AGENT_PRICE_USD = "0.05";
+export const AGENT_PRICE_UNITS = 50_000n; // 0.05 USDC (6 decimals)
 export const USDC_BASE = "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913";
 const DEFAULT_PAY_TO = "0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d";
 const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";

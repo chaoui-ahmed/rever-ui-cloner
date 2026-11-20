@@ -19,7 +19,7 @@
   "tools": [
     {
       "name": "clone_ui",
-      "description": "Generate a UI-recreation prompt from a public URL ($0.25). Pay with access_key (pack) or payment_tx (Base tx hash of a 0.25 USDC payment).",
+      "description": "Generate a UI-recreation prompt from a public URL ($0.05). Pay with access_key (pack) or payment_tx (Base tx hash of a 0.05 USDC payment).",
       "inputSchema": {
         "type": "object",
         "required": [
@@ -40,7 +40,7 @@
     }
   ],
   "pricing": {
-    "amount": "0.25",
+    "amount": "0.05",
     "currency": "USDC",
     "network": "base",
     "protocol": "x402"
