@@ -29,7 +29,9 @@ class PagesAdapter implements HTTPAdapter {
   getBody() { return this.body; }
 }
 
-let cached: { key: string; http: x402HTTPResourceServer; init: () => Promise<void> } | null = null;
+let cached: { key: string; http: x402HTTPResourceServer; init: () => Promise<void>; facilitator: "cdp" | "payai" } | null = null;
+let cdpBrokenUntil = 0;
+export let lastCdpError = ""; // after a CDP init failure, use PayAI for a while
 
 // Coinbase CDP facilitator when a CDP key is configured (indexes into Coinbase Bazaar / Agentic.Market),
 // otherwise PayAI's public facilitator (no key needed, Base mainnet, own Bazaar catalog).
@@ -38,11 +40,12 @@ const hasCdpKey = (env: Env) => Boolean(env.CDP_API_KEY_ID && env.CDP_API_KEY_SE
 export const x402Enabled = (_env: Env) => true;
 
 function getServer(env: Env, origin: string) {
-  const key = `${env.CDP_API_KEY_ID ?? "payai"}|${payTo(env)}|${origin}`;
+  const useCdp = hasCdpKey(env) && Date.now() > cdpBrokenUntil;
+  const key = `${useCdp ? env.CDP_API_KEY_ID : "payai"}|${payTo(env)}|${origin}`;
   if (cached?.key === key) return cached;
 
   const facilitator = new HTTPFacilitatorClient(
-    hasCdpKey(env) ? createFacilitatorConfig(env.CDP_API_KEY_ID, env.CDP_API_KEY_SECRET) : { url: PAYAI_FACILITATOR },
+    useCdp ? createFacilitatorConfig(env.CDP_API_KEY_ID, env.CDP_API_KEY_SECRET) : { url: PAYAI_FACILITATOR },
   );
   const server = new x402ResourceServer(facilitator);
   server.register("eip155:8453", new ExactEvmScheme());
@@ -95,7 +98,7 @@ function getServer(env: Env, origin: string) {
 
   const http = new x402HTTPResourceServer(server, routes);
   const { init } = prepareHttpServer(http, undefined, true);
-  cached = { key, http, init };
+  cached = { key, http, init, facilitator: useCdp ? "cdp" : "payai" };
   return cached;
 }
 
@@ -110,7 +113,7 @@ export async function withX402(
   handler: () => Promise<Response>,
 ): Promise<Response | null> {
   const origin = new URL(request.url).origin;
-  const { http, init } = getServer(env, origin);
+  let server = getServer(env, origin);
   const adapter = new PagesAdapter(request, body);
   const context: HTTPRequestContext = {
     adapter,
@@ -124,21 +127,39 @@ export async function withX402(
   // can fall back to the tx-hash flow instead of failing.
   let result;
   try {
-    await init();
-    result = await http.processHTTPRequest(context);
+    await server.init();
+    result = await server.http.processHTTPRequest(context);
   } catch (err) {
-    console.error("x402 unavailable:", err);
+    console.error(`x402 (${server.facilitator}) unavailable:`, err);
     cached = null;
-    return null;
+    if (server.facilitator !== "cdp") return null;
+    // CDP failed: retry with PayAI, and keep using PayAI for 10 minutes
+    cdpBrokenUntil = Date.now() + 10 * 60 * 1000;
+    lastCdpError = String((err as Error)?.message ?? err).slice(0, 150);
+    try {
+      await new HTTPFacilitatorClient(createFacilitatorConfig(env.CDP_API_KEY_ID, env.CDP_API_KEY_SECRET)).getSupported();
+    } catch (detail) {
+      lastCdpError = String((detail as Error)?.message ?? detail).slice(0, 300);
+    }
+    server = getServer(env, origin);
+    try {
+      await server.init();
+      result = await server.http.processHTTPRequest(context);
+    } catch (err2) {
+      console.error("x402 (payai) unavailable:", err2);
+      cached = null;
+      return null;
+    }
   }
+  const http = server.http;
 
   if (result.type === "no-payment-required") return handler();
-  const facilitatorName = hasCdpKey(env) ? "cdp" : "payai";
+  const facilitatorName = server.facilitator;
   if (result.type === "payment-error") {
     const { status, headers, body: resBody } = result.response;
     return new Response(JSON.stringify(resBody ?? {}), {
       status,
-      headers: { "Content-Type": "application/json", "X-Facilitator": facilitatorName, ...headers },
+      headers: { "Content-Type": "application/json", "X-Facilitator": facilitatorName, ...(lastCdpError ? { "X-Facilitator-Note": "cdp init failed: " + lastCdpError.replace(/[^\x20-\x7e]/g, "") } : {}), ...headers },
     });
   }
 
