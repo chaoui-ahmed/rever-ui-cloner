@@ -79,7 +79,7 @@ export async function pageMeta(_env: Env, url: string, _body?: Record<string, un
 
 // ---------- 2. Page → Markdown ----------
 
-const DROP = new Set(["script", "style", "noscript", "template", "svg", "canvas", "iframe", "form", "button", "select", "input", "textarea", "nav", "footer", "aside", "header"]);
+const DROP = new Set(["script", "style", "noscript", "template", "svg", "canvas", "iframe", "form", "button", "select", "input", "textarea", "nav", "footer", "aside"]);
 
 function toMarkdown(node: Node, base: string, listDepth = 0): string {
   if (node instanceof TextNode) return node.text.replace(/\s+/g, " ");
@@ -89,6 +89,12 @@ function toMarkdown(node: Node, base: string, listDepth = 0): string {
   if (/(^|\s)(cookie|consent|newsletter|modal|popup|sr-only)(\s|$)/i.test(node.getAttribute("class") ?? "")) return "";
   const kids = () => node.childNodes.map((c) => toMarkdown(c, base, listDepth)).join("");
   switch (tag) {
+    case "header": {
+      // Site banners (direct child of body, or containing navigation) are noise; article headers hold the title.
+      const parentTag = node.parentNode?.tagName?.toLowerCase();
+      if (parentTag === "body" && node.querySelector("nav, a[href='/']") || node.querySelector("nav")) return "";
+      return kids();
+    }
     case "h1": case "h2": case "h3": case "h4": case "h5": case "h6": {
       const t = kids().trim();
       return t ? `\n\n${"#".repeat(Number(tag[1]))} ${t}\n\n` : "";
