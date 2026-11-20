@@ -22,6 +22,7 @@ No account needed. AI agents pay per request ($0.02 to $0.25) in USDC on Base wi
 
 - Base URL: `https://www.aypiai.online`
 - [OpenAPI spec](https://www.aypiai.online/openapi.json)
+- [x402 discovery manifest](https://www.aypiai.online/.well-known/x402.json)
 - [Full agent guide](https://www.aypiai.online/llms-full.txt): payment options, errors, examples
 
 ## Payment (x402)

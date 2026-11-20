@@ -1,0 +1,73 @@
+{
+  "x402Version": 2,
+  "name": "Rever",
+  "description": "Website intelligence for AI agents: UI-recreation prompts, design tokens, screenshots and tech-stack detection. Pay per call in USDC on Base, no API key.",
+  "website": "https://www.aypiai.online",
+  "docs": {
+    "llms": "https://www.aypiai.online/llms.txt",
+    "openapi": "https://www.aypiai.online/openapi.json",
+    "mcp": "https://www.aypiai.online/mcp"
+  },
+  "payTo": "0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d",
+  "network": "eip155:8453",
+  "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+  "facilitator": "Coinbase CDP (Bazaar discovery on every 402)",
+  "resources": [
+    {
+      "resource": "https://www.aypiai.online/api/generate-prompt",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.25",
+      "amount": "250000",
+      "description": "Turn any public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model such as Lovable, v0, Claude or Cursor. Returns text, not code. Takes 10-30 s.",
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/design-tokens",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.05",
+      "amount": "50000",
+      "description": "Extract a website's design tokens as JSON: color palette with roles (hex), fonts and type scale, spacing, border radii, shadows, light/dark mode, and a ready-to-use Tailwind theme extension. Takes 5-20 s.",
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/screenshot",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.02",
+      "amount": "20000",
+      "description": "Screenshot any public web page. Returns a JPEG (base64 data URL plus a hosted URL). Options: width (320-2560, default 1280), height (300-8000, default 900), fullPage (boolean). Takes 3-15 s.",
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/tech-stack",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.02",
+      "amount": "20000",
+      "description": "Detect the technologies behind a website: framework (Next.js, Nuxt, Astro, React...), site builder (Webflow, Framer, Lovable, Shopify, WordPress...), hosting/CDN (Vercel, Netlify, Cloudflare...), CSS (Tailwind, Bootstrap), analytics, payments, auth and support tools, with evidence. Fast (1-3 s).",
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        }
+      }
+    }
+  ]
+}
