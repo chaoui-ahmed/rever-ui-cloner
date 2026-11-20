@@ -2,9 +2,17 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "online.aypiai.www/rever",
   "title": "Rever",
-  "description": "Turn any website URL into a prompt to recreate its UI with Lovable, v0, Claude or Cursor.",
-  "version": "1.0.0",
+  "description": "40 pay-per-call website tools for agents: markdown, contacts, SEO, security, DNS, WHOIS, crypto checks, design.",
+  "version": "1.1.0",
   "websiteUrl": "https://www.aypiai.online",
-  "repository": { "url": "https://github.com/chaoui-ahmed/rever-ui-cloner", "source": "github" },
-  "remotes": [{ "type": "streamable-http", "url": "https://www.aypiai.online/mcp" }]
+  "repository": {
+    "url": "https://github.com/chaoui-ahmed/rever-ui-cloner",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://www.aypiai.online/mcp"
+    }
+  ]
 }

@@ -1,24 +1,45 @@
 // Remote MCP server (Streamable HTTP, stateless JSON responses) at /mcp.
-// One tool: clone_ui. Payment: a pack access key, a USDC tx hash, or instructions to pay.
+// One tool per paid service (generated from the catalog) plus a free list_services tool.
+// Payment: x402 (PAYMENT-SIGNATURE value in the `payment` argument or in params._meta["x402/payment"]);
+// clone_ui also accepts a pack access key or a USDC tx hash.
 import { type Env, corsHeaders } from "./_shared";
+import { SERVICES } from "./_services";
 
 const PROTOCOL_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"];
+const PAY_TO = "0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d";
 
-const TOOL = {
-  name: "clone_ui",
-  title: "Clone a website's UI as a prompt",
-  description:
-    "Turn a public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model such as Lovable, v0, Claude or Cursor. Returns text, not code. Takes 10-30 s. Costs $0.05: pass access_key (pack bought on https://www.aypiai.online) or payment_tx (hash of a 0.05 USDC transfer on Base to the address returned when called without payment). x402-capable agents can instead call https://www.aypiai.online/api/generate-prompt directly.",
-  inputSchema: {
-    type: "object",
-    properties: {
-      url: { type: "string", description: "Public http(s) URL to recreate, e.g. https://stripe.com" },
-      access_key: { type: "string", description: "Optional. Access key of a pack (cs_live_...)." },
-      payment_tx: { type: "string", description: "Optional. Base tx hash of a 0.05 USDC payment (single use)." },
-    },
-    required: ["url"],
+const toolName = (path: string) => (path === "/api/generate-prompt" ? "clone_ui" : path.replace("/api/", "").replace(/-/g, "_"));
+const PAYMENT_ARG = {
+  payment: {
+    type: "string",
+    description: "x402 payment: the base64 PAYMENT-SIGNATURE value signed for the requirements returned by an unpaid call (USDC on Base, gasless). Omit on the first call to get the price and requirements.",
   },
-  annotations: { readOnlyHint: true, openWorldHint: true },
+};
+
+const TOOLS = SERVICES.map((s) => {
+  const schema = s.inputSchema as { type: string; properties: Record<string, unknown>; required?: string[] };
+  const extra = s.path === "/api/generate-prompt"
+    ? {
+        access_key: { type: "string", description: "Optional. Access key of a pack bought by card on https://www.aypiai.online (cs_live_...)." },
+        payment_tx: { type: "string", description: `Optional. Base tx hash of a direct ${s.priceUsd} USDC transfer to ${PAY_TO} (single use).` },
+      }
+    : {};
+  return {
+    name: toolName(s.path),
+    title: s.description.split(/(?<=[.:])\s/)[0].replace(/[.:]$/, "").slice(0, 80),
+    description: `${s.description} Price: $${s.priceUsd} per call (x402, USDC on Base). Without payment, returns the payment requirements.`,
+    inputSchema: { type: "object", properties: { ...schema.properties, ...extra, ...PAYMENT_ARG }, required: schema.required ?? ["url"] },
+    annotations: { readOnlyHint: true, openWorldHint: true },
+    _meta: { path: s.path, priceUsd: s.priceUsd, tags: s.tags },
+  };
+});
+
+const LIST_TOOL = {
+  name: "list_services",
+  title: "List Rever services and prices",
+  description: "Free. Lists all Rever website-intelligence tools with their price, so you can pick the cheapest one for the job.",
+  inputSchema: { type: "object", properties: {} },
+  annotations: { readOnlyHint: true, openWorldHint: false },
 };
 
 type RpcRequest = { jsonrpc: "2.0"; id?: string | number | null; method: string; params?: Record<string, any> };
@@ -26,37 +47,51 @@ type RpcRequest = { jsonrpc: "2.0"; id?: string | number | null; method: string;
 const rpcResult = (id: RpcRequest["id"], result: unknown) => ({ jsonrpc: "2.0", id, result });
 const rpcError = (id: RpcRequest["id"], code: number, message: string) => ({ jsonrpc: "2.0", id: id ?? null, error: { code, message } });
 
-async function callTool(request: Request, args: Record<string, any>) {
+const b64 = (s: string) => btoa(unescape(encodeURIComponent(s)));
+const unb64 = (s: string) => { try { return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch { return null; } };
+
+async function callTool(request: Request, tool: (typeof TOOLS)[0], args: Record<string, any>, meta: Record<string, any> | undefined) {
+  const path = tool._meta.path;
   const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const metaPay = meta?.["x402/payment"];
+  const payment = args.payment ?? (typeof metaPay === "string" ? metaPay : metaPay ? b64(JSON.stringify(metaPay)) : undefined);
+  if (payment) headers["PAYMENT-SIGNATURE"] = String(payment);
   if (args.access_key) headers["X-Access-Key"] = String(args.access_key);
   if (args.payment_tx) headers["X-Payment"] = String(args.payment_tx);
+  const { payment: _p, access_key: _a, payment_tx: _t, ...body } = args;
 
-  const res = await fetch(new URL("/api/generate-prompt", request.url), {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ url: args.url }),
-  });
+  const res = await fetch(new URL(path, request.url), { method: "POST", headers, body: JSON.stringify(body) });
   const data = (await res.json().catch(() => ({}))) as Record<string, any>;
+  const receipt = res.headers.get("payment-response");
 
-  if (res.ok && data.prompt) {
-    const note = typeof data.remaining === "number" ? `\n\n(${data.remaining} generations left on this key)` : "";
-    return { content: [{ type: "text", text: data.prompt + note }], isError: false };
+  if (res.ok) {
+    const text = path === "/api/generate-prompt" && data.prompt
+      ? data.prompt + (typeof data.remaining === "number" ? `\n\n(${data.remaining} generations left on this key)` : "")
+      : JSON.stringify(data, null, 2);
+    return { content: [{ type: "text", text }], structuredContent: data, isError: false, ...(receipt ? { _meta: { "x402/payment-response": unb64(receipt) ?? receipt } } : {}) };
   }
   if (res.status === 402) {
-    const reason = data.reason || data.error || "";
+    const header = res.headers.get("payment-required");
+    const requirements = header ? unb64(header) : null;
+    const reason = data.reason || data.error || requirements?.error || "";
+    const alt = path === "/api/generate-prompt"
+      ? `\nAlternatives: buy a pack at https://www.aypiai.online and pass access_key, or send ${tool._meta.priceUsd} USDC on Base to ${PAY_TO} and pass payment_tx.`
+      : "";
     return {
       isError: true,
+      structuredContent: { x402Version: 2, error: "payment_required", reason, accepts: requirements?.accepts ?? [] },
+      _meta: { "x402/error": { error: "payment_required", reason, accepts: requirements?.accepts ?? [], paymentRequired: header } },
       content: [{
         type: "text",
         text:
-          `Payment required${reason && reason !== "Payment Required" ? ` (${reason})` : ""}. Price: $0.05 per call. Options:\n` +
-          `1. Buy a pack by card at https://www.aypiai.online and call again with access_key.\n` +
-          `2. Send 0.05 USDC on Base to 0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d, then call again with payment_tx set to the transaction hash.\n` +
-          `3. If you have an x402 client, POST {"url": ...} to https://www.aypiai.online/api/generate-prompt directly.`,
+          `Payment required${reason && !/payment required/i.test(reason) ? ` (${reason})` : ""}: $${tool._meta.priceUsd} in USDC on Base (x402).\n` +
+          `Sign one of the accepted requirements below with an x402 client (EIP-3009, no gas needed) and call this tool again with the base64 PAYMENT-SIGNATURE value in "payment". ` +
+          `Or POST directly to https://www.aypiai.online${path} with any x402 client.${alt}\n\nPAYMENT-REQUIRED (base64): ${header ?? "n/a"}\n\n` +
+          JSON.stringify(requirements?.accepts ?? [], null, 2),
       }],
     };
   }
-  return { isError: true, content: [{ type: "text", text: `Rever error ${res.status}: ${data.error ?? "unknown"}` }] };
+  return { isError: true, content: [{ type: "text", text: `Rever error ${res.status}: ${data.error ?? "unknown"} (you were not charged)` }] };
 }
 
 async function handle(msg: RpcRequest, request: Request) {
@@ -66,19 +101,25 @@ async function handle(msg: RpcRequest, request: Request) {
       return rpcResult(msg.id, {
         protocolVersion: PROTOCOL_VERSIONS.includes(asked) ? asked : PROTOCOL_VERSIONS[0],
         capabilities: { tools: { listChanged: false } },
-        serverInfo: { name: "rever", title: "Rever", version: "1.0.0", websiteUrl: "https://www.aypiai.online" },
-        instructions: "Use clone_ui when the user wants to clone, copy or recreate the design of an existing website.",
+        serverInfo: { name: "rever", title: "Rever", version: "2.0.0", websiteUrl: "https://www.aypiai.online" },
+        instructions: "Website intelligence tools: give a URL, get JSON (markdown, contacts, socials, SEO, security, DNS, WHOIS, tech stack, crypto project trust check, design). Each tool costs $0.001-$0.05, paid with x402. Call list_services (free) to see prices.",
       });
     }
     case "ping":
       return rpcResult(msg.id, {});
     case "tools/list":
-      return rpcResult(msg.id, { tools: [TOOL] });
+      return rpcResult(msg.id, { tools: [LIST_TOOL, ...TOOLS] });
     case "tools/call": {
-      if (msg.params?.name !== TOOL.name) return rpcError(msg.id, -32602, `Unknown tool: ${msg.params?.name}`);
+      const name = msg.params?.name;
+      if (name === LIST_TOOL.name) {
+        const list = TOOLS.map((t) => ({ tool: t.name, price: `$${t._meta.priceUsd}`, what: t.title }));
+        return rpcResult(msg.id, { content: [{ type: "text", text: list.map((l) => `${l.tool} (${l.price}): ${l.what}`).join("\n") }], structuredContent: { services: list }, isError: false });
+      }
+      const tool = TOOLS.find((t) => t.name === name);
+      if (!tool) return rpcError(msg.id, -32602, `Unknown tool: ${name}`);
       const args = msg.params?.arguments ?? {};
       if (!args.url || typeof args.url !== "string") return rpcError(msg.id, -32602, "Missing required argument: url");
-      return rpcResult(msg.id, await callTool(request, args));
+      return rpcResult(msg.id, await callTool(request, tool, args, msg.params?._meta));
     }
     case "resources/list":
       return rpcResult(msg.id, { resources: [] });
