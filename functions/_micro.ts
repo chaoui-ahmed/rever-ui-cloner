@@ -294,7 +294,7 @@ function svc(path: string, priceUsd: string, description: string, tags: string[]
 
 const EVM_ADDR = /\b0x[a-fA-F0-9]{40}\b/g;
 const AUDITORS = /certik|hacken|peckshield|quantstamp|trail ?of ?bits|openzeppelin|consensys diligence|cyberscope|solidproof|interfi|sourcehat|halborn|spywolf|zellic|spearbit|code4rena|sherlock|ottersec|slowmist|beosin|chainsecurity|least authority|omniscia|veridise|cantina/i;
-const SCAM_PHRASES = /guaranteed (returns|profit)|risk[- ]free|100x|1000x|double your (crypto|money|investment)|validate (your )?wallet|rectify|wallet (sync|validation)|claim (your )?(airdrop|reward)s? now|enter (your )?(seed|recovery|secret) phrase|private key|send .{0,20}(eth|btc|usdt|sol).{0,20}(receive|get back)|presale ends in/i;
+const SCAM_PHRASES = /guaranteed (returns|profit)|risk[- ]free|(next|guaranteed|easy) 1000?x|double your (crypto|money|investment)|validate (your )?wallet|rectify|wallet (sync|validation)|claim (your )?(airdrop|reward)s? now|enter (your )?(seed|recovery|secret) phrase|private key|send .{0,20}(eth|btc|usdt|sol).{0,20}(receive|get back)|presale ends in/i;
 
 export const MICRO: Micro[] = [
   svc("contacts", "0.003",
