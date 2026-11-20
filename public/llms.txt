@@ -81,11 +81,11 @@ No account needed. AI agents pay per request ($0.001 to $0.05) in USDC on Base w
 2. Your x402 client signs a USDC authorization (gasless for you) and retries with the `PAYMENT-SIGNATURE` header.
 3. You get the JSON result, plus a `PAYMENT-RESPONSE` header with the settlement receipt.
 
-Other ways to pay: for `/api/generate-prompt` only: for `/api/generate-prompt` only: send 0.05 USDC on Base to the `payTo` address and retry with `X-Payment: <transaction hash>`, or use a pack key in `X-Access-Key`.
+Other ways to pay: for `/api/generate-prompt` only: for `/api/generate-prompt` only: for `/api/generate-prompt` only: send 0.05 USDC on Base to the `payTo` address and retry with `X-Payment: <transaction hash>`, or use a pack key in `X-Access-Key`.
 
 ## Tools
 
-- Remote MCP server: `https://www.aypiai.online/mcp` (Streamable HTTP): one tool per service (e.g. `page_markdown`, `crypto_site_check`, `clone_ui`) plus free `list_services`; pay by passing an x402 `payment` argument, listed in the official MCP Registry as `online.aypiai.www/rever`
+- Remote MCP server: `https://www.aypiai.online/mcp` (Streamable HTTP): one tool per service (e.g. `page_markdown`, `crypto_site_check`, `clone_ui`) plus `list_services`. **Free tier: 20 calls per day per user on all tools priced $0.005 or less, no signup or wallet.** Above that, or for premium tools, pay by passing an x402 `payment` argument, listed in the official MCP Registry as `online.aypiai.www/rever`
 - [Local MCP server](https://github.com/chaoui-ahmed/rever-ui-cloner/tree/main/rever-mcp): `clone_ui` only, over stdio
 - [MCP server card](https://www.aypiai.online/.well-known/mcp.json)
 

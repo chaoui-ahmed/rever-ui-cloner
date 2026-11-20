@@ -1,7 +1,7 @@
 {
   "name": "rever-ui-cloner",
   "title": "Rever",
-  "description": "40 website-intelligence tools for agents ($0.001 to $0.05 per call, x402 USDC on Base): page to markdown, contacts, socials, SEO and security audits, DNS, WHOIS, tech stack, crypto project trust check, design tokens, screenshots, UI-recreation prompts.",
+  "description": "40 website-intelligence tools for agents. 20 free calls/day on most tools, then $0.001 to $0.05 per call (x402, USDC on Base): page to markdown, contacts, socials, SEO and security audits, DNS, WHOIS, tech stack, crypto project trust check, design tokens, screenshots, UI-recreation prompts.",
   "version": "4.0.0",
   "repository": "https://github.com/chaoui-ahmed/rever-ui-cloner",
   "documentation": "https://www.aypiai.online/llms-full.txt",

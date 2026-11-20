@@ -104,7 +104,7 @@ console.log(`${n} services written to openapi.json, x402.json, llms.txt, llms-fu
 // ---------- .well-known/mcp.json (server card) ----------
 const card = JSON.parse(readFileSync("public/.well-known/mcp.json", "utf8"));
 const tname = (p: string) => (p === "/api/generate-prompt" ? "clone_ui" : p.replace("/api/", "").replace(/-/g, "_"));
-card.description = `${n + 1} website-intelligence tools for agents (${range} per call, x402 USDC on Base): page to markdown, contacts, socials, SEO and security audits, DNS, WHOIS, tech stack, crypto project trust check, design tokens, screenshots, UI-recreation prompts.`;
+card.description = `${n + 1} website-intelligence tools for agents. 20 free calls/day on most tools, then ${range} per call (x402, USDC on Base): page to markdown, contacts, socials, SEO and security audits, DNS, WHOIS, tech stack, crypto project trust check, design tokens, screenshots, UI-recreation prompts.`;
 card.version = "4.0.0";
 card.tools = [
   { name: "list_services", description: "Free. Lists all tools with prices.", inputSchema: { type: "object", properties: {} } },

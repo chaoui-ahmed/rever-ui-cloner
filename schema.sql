@@ -30,3 +30,11 @@ CREATE TABLE IF NOT EXISTS bot_visits (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS bot_visits_created ON bot_visits (created_at);
+
+-- Free MCP tier: calls per hashed IP per UTC day (created lazily by functions/_free.ts too)
+CREATE TABLE IF NOT EXISTS free_usage (
+  day TEXT NOT NULL,
+  client TEXT NOT NULL,
+  calls INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (day, client)
+);
