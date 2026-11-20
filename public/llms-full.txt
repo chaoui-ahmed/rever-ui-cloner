@@ -28,6 +28,9 @@ Same request shape: POST JSON `{"url": "https://..."}`.
 
 - POST /api/design-tokens ($0.05) → `{"url", "tokens": {"colors": [{"hex","role","usage"}], "typography": {...}, "spacing": {...}, "radii": {...}, "shadows": [...], "mode", "style", "tailwind": {"theme": {"extend": {...}}}}}`
 - POST /api/screenshot ($0.02), optional `width` (320-2560), `height` (300-8000), `fullPage` (bool) → `{"url", "image": "data:image/jpeg;base64,...", "imageUrl", "width", "fullPage", "bytes"}`
+- POST /api/brand-kit ($0.03) → `{"url", "name", "logo", "logoSvg", "logoCandidates", "favicon", "themeColor", "colors": [{"hex","count"}], "cssVariables", "fonts"}`
+- POST /api/page-markdown ($0.01), optional `maxChars` → `{"url", "title", "markdown", "chars", "truncated"}`
+- POST /api/meta ($0.005) → `{"title", "description", "canonical", "lang", "openGraph", "twitter", "icons", "feeds", "jsonLdTypes", "headings", "links", "wordCount"}`
 - POST /api/tech-stack ($0.02) → `{"url", "finalUrl", "title", "generator", "technologies": [{"name","category","evidence"}]}`
 
 ## Option 1 — x402 (recommended, automatic)

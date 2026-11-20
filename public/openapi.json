@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Rever API",
-    "version": "4.0.0",
-    "summary": "Website intelligence for agents: UI prompts, design tokens, screenshots, tech stack.",
+    "version": "5.0.0",
+    "summary": "Website intelligence for agents: UI prompts, design tokens, brand kits, screenshots, markdown, metadata, tech stack.",
     "description": "Takes a screenshot of a public URL and returns a detailed design brief (layout, components, colors, typography, spacing) that a code-generation model can use to rebuild the UI in React + Tailwind. Price $0.25 per successful call. Agents pay with x402 v2 (exact scheme, USDC on Base eip155:8453): the first call returns 402 with a PAYMENT-REQUIRED header; retry with PAYMENT-SIGNATURE. Also accepted: X-Payment with the hash of a direct USDC transfer, or X-Access-Key from a pack bought on the website. Full guide: https://www.aypiai.online/llms-full.txt",
     "contact": {
       "name": "Ahmed Chaoui",
@@ -410,6 +410,233 @@
         "x-payment-info": {
           "protocol": "x402",
           "price": "0.02",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/brand-kit": {
+      "post": {
+        "operationId": "getBrandKit",
+        "summary": "Get a website's brand kit",
+        "description": "Get a website's brand kit in one call: the site's own logo (URL plus inline SVG when available, not customer logos), favicon, theme color, color palette ranked by usage, brand CSS variables and fonts, read from its HTML and stylesheets. Fast (1-4 s). Price: $0.03 per call via x402 (USDC on Base).",
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "logo": {
+                      "type": "string"
+                    },
+                    "logoSvg": {
+                      "type": "string"
+                    },
+                    "favicon": {
+                      "type": "string"
+                    },
+                    "colors": {
+                      "type": "array"
+                    },
+                    "fonts": {
+                      "type": "array"
+                    },
+                    "cssVariables": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.03",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/page-markdown": {
+      "post": {
+        "operationId": "getPageMarkdown",
+        "summary": "Convert a page to Markdown",
+        "description": "Convert any web page into clean Markdown for LLMs: main content only (no nav, footer, scripts, cookie banners), with headings, lists, links, images, tables and code blocks preserved. Optional maxChars (1,000-200,000, default 50,000). Fast (1-3 s). Price: $0.01 per call via x402 (USDC on Base).",
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "maxChars": {
+                    "type": "integer",
+                    "minimum": 1000,
+                    "maximum": 200000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "markdown": {
+                      "type": "string"
+                    },
+                    "chars": {
+                      "type": "integer"
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.01",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/meta": {
+      "post": {
+        "operationId": "getPageMeta",
+        "summary": "Get page metadata",
+        "description": "Get a page's metadata: title, description, canonical URL, language, Open Graph and Twitter card (including preview image), icons, RSS feeds, JSON-LD types, H1s, link and word counts. Fast (under 2 s). Price: $0.005 per call via x402 (USDC on Base).",
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "openGraph": {
+                      "type": "object"
+                    },
+                    "icons": {
+                      "type": "array"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.005",
           "network": "eip155:8453",
           "asset": "USDC"
         }

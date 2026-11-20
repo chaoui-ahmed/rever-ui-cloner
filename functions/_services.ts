@@ -266,4 +266,41 @@ export const SERVICES: ServiceDef[] = [
     outputExample: { url: "https://vercel.com/", title: "Vercel", technologies: [{ name: "Next.js", category: "framework", evidence: "html" }, { name: "Vercel", category: "hosting", evidence: "header x-vercel-id" }] },
     outputSchema: { type: "object", properties: { technologies: { type: "array" } }, required: ["technologies"] },
   },
+{
+    path: "/api/brand-kit",
+    priceUsd: "0.03",
+    description:
+      "Get a website's brand kit in one call: the site's own logo (URL plus inline SVG when available, not customer logos), favicon, theme color, color palette ranked by usage, brand CSS variables and fonts, read from its HTML and stylesheets. Fast (1-4 s).",
+    tags: ["brand", "logo", "favicon", "colors", "fonts", "branding", "design", "company"],
+    inputExample: { url: "https://stripe.com" },
+    inputSchema: urlInputSchema,
+    outputExample: { url: "https://stripe.com/", name: "Stripe", logo: "https://.../favicon.svg", logoSvg: "<svg ...>", favicon: "https://stripe.com/favicon.ico", colors: [{ hex: "#533afd", count: 41 }], fonts: ["sohne-var"] },
+    outputSchema: { type: "object", properties: { logo: { type: "string" }, colors: { type: "array" }, fonts: { type: "array" } }, required: ["colors", "fonts"] },
+  },
+  {
+    path: "/api/page-markdown",
+    priceUsd: "0.01",
+    description:
+      "Convert any web page into clean Markdown for LLMs: main content only (no nav, footer, scripts, cookie banners), with headings, lists, links, images, tables and code blocks preserved. Optional maxChars (1,000-200,000, default 50,000). Fast (1-3 s).",
+    tags: ["markdown", "scrape", "web", "content", "llm", "reader", "extract", "text"],
+    inputExample: { url: "https://en.wikipedia.org/wiki/HTTP_402", maxChars: 20000 },
+    inputSchema: {
+      type: "object",
+      properties: { url: { type: "string", description: "Public http(s) URL" }, maxChars: { type: "number", description: "Max characters returned (1000-200000)" } },
+      required: ["url"],
+    },
+    outputExample: { url: "https://example.com/", title: "Example Domain", markdown: "# Example Domain\n\nThis domain is for use in illustrative examples...", chars: 180, truncated: false },
+    outputSchema: { type: "object", properties: { markdown: { type: "string" }, title: { type: "string" } }, required: ["markdown"] },
+  },
+  {
+    path: "/api/meta",
+    priceUsd: "0.005",
+    description:
+      "Get a page's metadata: title, description, canonical URL, language, Open Graph and Twitter card (including preview image), icons, RSS feeds, JSON-LD types, H1s, link and word counts. Fast (under 2 s).",
+    tags: ["metadata", "seo", "open-graph", "link-preview", "unfurl", "title", "favicon", "web"],
+    inputExample: { url: "https://vercel.com" },
+    inputSchema: urlInputSchema,
+    outputExample: { url: "https://vercel.com/", title: "Vercel", description: "...", openGraph: { image: "https://.../og.png" }, icons: [{ rel: "icon", href: "https://vercel.com/favicon.ico" }] },
+    outputSchema: { type: "object", properties: { title: { type: "string" }, description: { type: "string" }, openGraph: { type: "object" } } },
+  },
 ];

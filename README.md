@@ -14,6 +14,9 @@ Rever takes a full-page screenshot of the URL and has Claude Haiku describe the 
 | `POST /api/design-tokens` | Palette, fonts, spacing, radii, shadows, Tailwind theme (JSON) | $0.05 |
 | `POST /api/screenshot` | JPEG screenshot (width, height, fullPage) | $0.02 |
 | `POST /api/tech-stack` | Framework, builder, hosting, CSS, analytics, payments, auth | $0.02 |
+| `POST /api/brand-kit` | Logo (URL + SVG), favicon, palette, CSS variables, fonts | $0.03 |
+| `POST /api/page-markdown` | Main content as clean Markdown | $0.01 |
+| `POST /api/meta` | Title, description, Open Graph, icons, JSON-LD, link counts | $0.005 |
 
 ## Three ways to use it
 

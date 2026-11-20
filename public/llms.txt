@@ -2,7 +2,7 @@
 
 > Rever turns a website URL into a detailed, ready-to-paste prompt for recreating that site's UI with an AI code generator (Lovable, v0, Bolt, Claude, Cursor). It screenshots the page and has a vision model describe the layout, sections, components, colors, typography and spacing as build instructions. Use it when a user asks to clone, copy, rebuild or get inspired by an existing website's design.
 
-No account needed. AI agents pay per request ($0.02 to $0.25) in USDC on Base with the standard x402 protocol: any x402 client (e.g. `@x402/fetch`, Coinbase AgentKit) pays automatically. People buy a pack of generations by card on the website.
+No account needed. AI agents pay per request ($0.005 to $0.25) in USDC on Base with the standard x402 protocol: any x402 client (e.g. `@x402/fetch`, Coinbase AgentKit) pays automatically. People buy a pack of generations by card on the website.
 
 ## What you get
 
@@ -17,6 +17,9 @@ No account needed. AI agents pay per request ($0.02 to $0.25) in USDC on Base wi
 - `/api/design-tokens` ($0.05): color palette with roles, fonts and type scale, spacing, radii, shadows, Tailwind theme, as JSON
 - `/api/screenshot` ($0.02): JPEG screenshot of any page (options: `width`, `height`, `fullPage`)
 - `/api/tech-stack` ($0.02): framework, site builder, hosting/CDN, CSS, analytics, payments and auth tools used by a site, with evidence
+- `/api/brand-kit` ($0.03): the site's own logo (URL + inline SVG), favicon, theme color, color palette, brand CSS variables and fonts
+- `/api/page-markdown` ($0.01): main content of a page as clean Markdown for LLMs (optional `maxChars`)
+- `/api/meta` ($0.005): title, description, canonical, Open Graph/Twitter card, icons, feeds, JSON-LD types, H1s, link counts
 
 ## API
 

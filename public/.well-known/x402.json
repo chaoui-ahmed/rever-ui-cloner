@@ -1,7 +1,7 @@
 {
   "x402Version": 2,
   "name": "Rever",
-  "description": "Website intelligence for AI agents: UI-recreation prompts, design tokens, screenshots and tech-stack detection. Pay per call in USDC on Base, no API key.",
+  "description": "Website intelligence for AI agents: UI-recreation prompts, design tokens, brand kits, screenshots, page-to-markdown, metadata and tech-stack detection. Pay per call in USDC on Base, no API key.",
   "website": "https://www.aypiai.online",
   "docs": {
     "llms": "https://www.aypiai.online/llms.txt",
@@ -62,6 +62,48 @@
       "price": "$0.02",
       "amount": "20000",
       "description": "Detect the technologies behind a website: framework (Next.js, Nuxt, Astro, React...), site builder (Webflow, Framer, Lovable, Shopify, WordPress...), hosting/CDN (Vercel, Netlify, Cloudflare...), CSS (Tailwind, Bootstrap), analytics, payments, auth and support tools, with evidence. Fast (1-3 s).",
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/brand-kit",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.03",
+      "amount": "30000",
+      "description": "Get a website's brand kit in one call: the site's own logo (URL plus inline SVG when available, not customer logos), favicon, theme color, color palette ranked by usage, brand CSS variables and fonts, read from its HTML and stylesheets. Fast (1-4 s).",
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/page-markdown",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.01",
+      "amount": "10000",
+      "description": "Convert any web page into clean Markdown for LLMs: main content only (no nav, footer, scripts, cookie banners), with headings, lists, links, images, tables and code blocks preserved. Optional maxChars (1,000-200,000, default 50,000). Fast (1-3 s).",
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "url": "https://stripe.com"
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/meta",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.005",
+      "amount": "5000",
+      "description": "Get a page's metadata: title, description, canonical URL, language, Open Graph and Twitter card (including preview image), icons, RSS feeds, JSON-LD types, H1s, link and word counts. Fast (under 2 s).",
       "input": {
         "contentType": "application/json",
         "example": {
