@@ -1011,9 +1011,14 @@ export const MICRO: Micro[] = [
       const text = visibleText(p.root);
       const lower = text.toLowerCase();
       const links = anchors(p);
-      const soc = socials(links);
+      // JS-rendered apps show no links in HTML: also read URLs embedded in the raw page code and meta tags.
+      const rawUrls = uniq((p.html.match(/https?:\/\/(?:www\.)?(?:twitter\.com|x\.com|t\.me|discord\.gg|discord\.com\/invite|github\.com|medium\.com|warpcast\.com)\/[A-Za-z0-9_@./-]{2,60}/g) ?? []).map((u) => u.replace(/[.\/]+$/, "")));
+      const twSite = meta(p.root, "twitter:site")?.replace(/^@/, "");
+      const soc = socials([...links, ...rawUrls.map((href) => ({ href })), ...(twSite ? [{ href: `https://x.com/${twSite}` }] : [])]);
+      const scriptCount = p.root.querySelectorAll("script[src]").length;
       const kp = keyPages(p);
-      const docs = links.find((a) => /whitepaper|litepaper|gitbook|docs\.|\/docs|documentation/i.test(a.href + " " + a.text))?.href ?? null;
+      const docs = links.find((a) => /whitepaper|litepaper|gitbook|docs\.|\/docs|documentation/i.test(a.href + " " + a.text))?.href
+        ?? p.html.match(/https?:\/\/[a-z0-9.-]*(?:gitbook\.io|docs\.[a-z0-9.-]+)[^"'\s<>]*/i)?.[0] ?? null;
       const audits = uniq([...(text.match(new RegExp(AUDITORS.source, "gi")) ?? []), ...links.filter((a) => AUDITORS.test(a.href)).map((a) => a.href.match(AUDITORS)?.[0] ?? "")].map((s) => s.toLowerCase()).filter(Boolean));
       const evm = uniq((p.html.match(EVM_ADDR) ?? []).map((a) => a.toLowerCase())).filter((a) => !/^0x0{40}$/.test(a)).slice(0, 10);
       const sol = uniq([...text.matchAll(/(?:contract|address|\bca\b|mint|token)[^A-Za-z0-9]{0,20}([1-9A-HJ-NP-Za-km-z]{32,44})/gi)].map((m) => m[1])).filter((a) => /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(a)).slice(0, 5);
@@ -1023,7 +1028,8 @@ export const MICRO: Micro[] = [
       const scam = uniq((text.match(new RegExp(SCAM_PHRASES.source, "gi")) ?? []).map((s) => s.toLowerCase())).slice(0, 8);
       const freeHost = /\.(vercel\.app|netlify\.app|github\.io|pages\.dev|carrd\.co|webflow\.io|framer\.website|framer\.app|wixsite\.com|weebly\.com|square\.site|godaddysites\.com|replit\.app|glitch\.me|firebaseapp\.com|web\.app|onrender\.com)$/i.test(host);
       const template = /lorem ipsum|your token name|token name here|\$ticker|coming soon\s*coming soon|insert (text|contract)/i.test(lower);
-      const words = text.split(/\s+/).length;
+      const words = text.split(/\s+/).filter(Boolean).length;
+      const jsRendered = words < 80 && scriptCount >= 3;
       const age = who?.ageDays ?? wb.ageDays;
 
       const red: string[] = [];
@@ -1039,13 +1045,14 @@ export const MICRO: Micro[] = [
       if (!p.finalUrl.startsWith("https:")) add(-10, "No HTTPS");
       if (freeHost) add(-10, `Hosted on a free subdomain (${host})`);
       if (template) add(-10, "Template/placeholder text left on the page");
-      if (words < 150) add(-5, `Very little content (${words} words)`);
+      if (jsRendered) red.push("Page renders with JavaScript only: content, team and docs could not be read (score relies on domain, archive and code signals)");
+      else if (words < 150) add(-5, `Very little content (${words} words)`);
       if (soc.x) add(4, "X/Twitter linked");
       if (soc.telegram || soc.discord) add(3, "Community channel linked (Telegram/Discord)");
       if (soc.github) add(8, "GitHub linked");
-      if (!soc.x && !soc.telegram && !soc.discord) add(-8, "No X, Telegram or Discord linked");
+      if (!soc.x && !soc.telegram && !soc.discord) add(jsRendered ? -3 : -8, "No X, Telegram or Discord linked");
       if (docs) add(6, "Docs or whitepaper linked");
-      if (kp.team || kp.about || /\bteam\b|founder|co-founder/i.test(lower)) add(4, "Team/about information present"); else red.push("No team or about information");
+      if (kp.team || kp.about || /\bteam\b|founder|co-founder/i.test(lower)) add(4, "Team/about information present"); else if (!jsRendered) red.push("No team or about information");
       if (audits.length) add(6, `Audit firm mentioned: ${audits.join(", ")}`);
       if (kp.privacy || kp.terms) add(2, "Legal pages (privacy/terms)");
       if (contract) contractListed ? add(8, "Your contract address is published on the site") : add(-15, "Your contract address does NOT appear on the site");
@@ -1063,6 +1070,7 @@ export const MICRO: Micro[] = [
         registrar: who?.registrar ?? null,
         firstArchived: wb.first?.date ?? null,
         https: p.finalUrl.startsWith("https:"),
+        jsRendered,
         socials: soc,
         docs,
         teamPage: kp.team ?? kp.about ?? null,
