@@ -1004,7 +1004,29 @@ export const MICRO: Micro[] = [
       outputSchema: { type: "object", properties: { score: { type: "number" }, verdict: { type: "string" }, redFlags: { type: "array" }, greenFlags: { type: "array" } }, required: ["score", "verdict"] },
     },
     run: async (_e, url, body) => {
-      const p = await page(url);
+      let p: Page;
+      try {
+        p = await page(url);
+      } catch (e) {
+        // Bot-protected sites (403/503 challenge): still answer from domain registration and archive history.
+        const host = new URL(url).hostname;
+        const domain = registrableDomain(host);
+        const [who, wb] = await Promise.all([rdap(domain), wayback(host.replace(/^www\./, ""))]);
+        if (!who && !wb.first) throw e;
+        const age = who?.ageDays ?? wb.ageDays;
+        const red = [`Website could not be read (${(e as Error).message}); result based on domain and archive history only`];
+        const green: string[] = [];
+        let score = 50;
+        if (age !== null && age < 30) { score -= 25; red.push(`Domain is only ${age} days old`); }
+        else if (age !== null && age < 180) { score -= 10; red.push(`Domain is ${age} days old (under 6 months)`); }
+        else if (age !== null && age > 365) { score += age > 1095 ? 15 : 8; green.push(`Domain older than ${age > 1095 ? "3 years" : "1 year"} (${age} days)`); }
+        return {
+          url, partial: true, score, verdict: score < 35 ? "high risk signals" : score < 65 ? "mixed signals" : "low risk signals",
+          domain, domainAgeDays: age, domainCreated: who?.created ?? null, registrar: who?.registrar ?? null, firstArchived: wb.first?.date ?? null,
+          redFlags: red, greenFlags: green,
+          disclaimer: "Automated heuristics from public data only. Not financial advice; does not analyze the token contract or liquidity.",
+        };
+      }
       const host = new URL(p.finalUrl).hostname;
       const domain = registrableDomain(host);
       const [who, wb] = await Promise.all([rdap(domain), wayback(host.replace(/^www\./, ""))]);
@@ -1029,7 +1051,7 @@ export const MICRO: Micro[] = [
       const freeHost = /\.(vercel\.app|netlify\.app|github\.io|pages\.dev|carrd\.co|webflow\.io|framer\.website|framer\.app|wixsite\.com|weebly\.com|square\.site|godaddysites\.com|replit\.app|glitch\.me|firebaseapp\.com|web\.app|onrender\.com)$/i.test(host);
       const template = /lorem ipsum|your token name|token name here|\$ticker|coming soon\s*coming soon|insert (text|contract)/i.test(lower);
       const words = text.split(/\s+/).filter(Boolean).length;
-      const jsRendered = words < 80 && scriptCount >= 3;
+      const jsRendered = words < 80 && (scriptCount >= 1 || /id=["'](root|app|__next|__nuxt|svelte)["']/i.test(p.html));
       const age = who?.ageDays ?? wb.ageDays;
 
       const red: string[] = [];
