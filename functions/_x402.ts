@@ -133,11 +133,12 @@ export async function withX402(
   }
 
   if (result.type === "no-payment-required") return handler();
+  const facilitatorName = hasCdpKey(env) ? "cdp" : "payai";
   if (result.type === "payment-error") {
     const { status, headers, body: resBody } = result.response;
     return new Response(JSON.stringify(resBody ?? {}), {
       status,
-      headers: { "Content-Type": "application/json", ...headers },
+      headers: { "Content-Type": "application/json", "X-Facilitator": facilitatorName, ...headers },
     });
   }
 
