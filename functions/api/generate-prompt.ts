@@ -1,8 +1,9 @@
 import {
   type Env, json, corsHeaders, paymentRequired, verifyUsdcPayment, redeemAccessKey,
-  validateTargetUrl, arrayBufferToBase64, AGENT_PRICE_UNITS, USDC_BASE,
+  validateTargetUrl, AGENT_PRICE_UNITS, USDC_BASE,
 } from "../_shared";
 import { withX402, x402Enabled } from "../_x402";
+import { generateUiPrompt, UpstreamError } from "../_services";
 
 const withCors = (res: Response) => {
   const out = new Response(res.body, res);
@@ -10,47 +11,8 @@ const withCors = (res: Response) => {
   return out;
 };
 
-const SYSTEM_PROMPT =
-  "You are an expert UI/UX reverse-engineer. Given a screenshot of a website, produce a detailed, actionable prompt that a developer could paste into Lovable or v0 to recreate the UI faithfully. Return ONLY the prompt text.";
-
-class UpstreamError extends Error {}
-
 async function generate(env: Env, url: string) {
-  const params = new URLSearchParams({
-    // Capped size: Claude rejects images over 8000 px on a side or ~5 MB
-    token: env.SCREENSHOT_API_KEY, url, output: "json", file_type: "jpeg", wait_for_event: "load",
-    full_page: "false", width: "1280", height: "3200",
-  });
-  const shotRes = await fetch(`https://shot.screenshotapi.net/screenshot?${params}`);
-  const shot = shotRes.ok ? ((await shotRes.json()) as { screenshot?: string }) : null;
-  if (!shot?.screenshot) throw new UpstreamError("Screenshot failed");
-
-  const imgRes = await fetch(shot.screenshot);
-  if (!imgRes.ok) throw new UpstreamError("Screenshot download failed");
-  const bytes = await imgRes.arrayBuffer();
-  if (bytes.byteLength > 5 * 1024 * 1024) throw new UpstreamError("Screenshot too large");
-  const image = arrayBufferToBase64(bytes);
-
-  const aiRes = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-haiku-4-5",
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
-      messages: [{
-        role: "user",
-        content: [
-          { type: "image", source: { type: "base64", media_type: "image/jpeg", data: image } },
-          { type: "text", text: "Reverse-engineer this UI." },
-        ],
-      }],
-    }),
-  });
-  const ai = (await aiRes.json()) as { content?: { text?: string }[]; error?: { message?: string } };
-  const prompt = ai?.content?.[0]?.text;
-  if (!aiRes.ok || !prompt) throw new UpstreamError(`Model error: ${ai?.error?.message ?? aiRes.status}`);
-  return prompt;
+  return (await generateUiPrompt(env, url)).prompt;
 }
 
 export const onRequestOptions: PagesFunction<Env> = () => new Response(null, { headers: corsHeaders });

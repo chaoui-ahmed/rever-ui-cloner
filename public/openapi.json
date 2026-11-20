@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Rever UI-to-Prompt API",
-    "version": "3.0.0",
-    "summary": "Turn a website URL into a prompt for recreating its UI.",
+    "title": "Rever API",
+    "version": "4.0.0",
+    "summary": "Website intelligence for agents: UI prompts, design tokens, screenshots, tech stack.",
     "description": "Takes a screenshot of a public URL and returns a detailed design brief (layout, components, colors, typography, spacing) that a code-generation model can use to rebuild the UI in React + Tailwind. Price $0.25 per successful call. Agents pay with x402 v2 (exact scheme, USDC on Base eip155:8453): the first call returns 402 with a PAYMENT-REQUIRED header; retry with PAYMENT-SIGNATURE. Also accepted: X-Payment with the hash of a direct USDC transfer, or X-Access-Key from a pack bought on the website. Full guide: https://www.aypiai.online/llms-full.txt",
     "contact": {
       "name": "Ahmed Chaoui",
@@ -187,6 +187,234 @@
           "401": {
             "description": "Invalid access key."
           }
+        }
+      }
+    },
+    "/design-tokens": {
+      "post": {
+        "operationId": "getDesignTokens",
+        "summary": "Extract design tokens from a URL",
+        "description": "Color palette with roles, fonts and type scale, spacing, radii, shadows, light/dark mode and a Tailwind theme extension, as JSON. Price: $0.05 per call via x402 (USDC on Base).",
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    },
+                    "tokens": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required (x402): decode PAYMENT-REQUIRED header, retry with PAYMENT-SIGNATURE."
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.05",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/screenshot": {
+      "post": {
+        "operationId": "takeScreenshot",
+        "summary": "Screenshot a web page",
+        "description": "JPEG screenshot returned as a base64 data URL and a hosted URL. Price: $0.02 per call via x402 (USDC on Base).",
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 320,
+                    "maximum": 2560
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 300,
+                    "maximum": 8000
+                  },
+                  "fullPage": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "image": {
+                      "type": "string"
+                    },
+                    "imageUrl": {
+                      "type": "string"
+                    },
+                    "width": {
+                      "type": "integer"
+                    },
+                    "bytes": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required (x402): decode PAYMENT-REQUIRED header, retry with PAYMENT-SIGNATURE."
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.02",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/tech-stack": {
+      "post": {
+        "operationId": "detectTechStack",
+        "summary": "Detect a website's tech stack",
+        "description": "Framework, site builder, hosting/CDN, CSS, analytics, payments, auth and support tools, with evidence. Price: $0.02 per call via x402 (USDC on Base).",
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "url"
+                ],
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "technologies": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "category": {
+                            "type": "string"
+                          },
+                          "evidence": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Payment required (x402): decode PAYMENT-REQUIRED header, retry with PAYMENT-SIGNATURE."
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.02",
+          "network": "eip155:8453",
+          "asset": "USDC"
         }
       }
     }

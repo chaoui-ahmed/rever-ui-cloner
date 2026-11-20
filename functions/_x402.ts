@@ -12,9 +12,9 @@ import {
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { bazaarResourceServerExtension, declareDiscoveryExtension } from "@x402/extensions/bazaar";
 import { createFacilitatorConfig } from "@coinbase/x402";
-import { type Env, payTo, AGENT_PRICE_USD } from "./_shared";
+import { type Env, payTo } from "./_shared";
+import { SERVICES } from "./_services";
 
-export const ROUTE = "POST /api/generate-prompt";
 
 class PagesAdapter implements HTTPAdapter {
   constructor(private req: Request, private body: unknown) {}
@@ -51,50 +51,36 @@ function getServer(env: Env, origin: string) {
   server.register("eip155:8453", new ExactEvmScheme());
   server.registerExtension(bazaarResourceServerExtension);
 
-  const routes = {
-    [ROUTE]: {
-      accepts: { scheme: "exact", price: `$${AGENT_PRICE_USD}`, network: "eip155:8453" as const, payTo: payTo(env) },
-      resource: `${origin}/api/generate-prompt`,
-      description:
-        "Turn any public website URL into a detailed prompt (layout, components, colors, typography, spacing) for recreating its UI with a code model such as Lovable, v0, Claude or Cursor. Returns text, not code. Takes 10-30 s.",
+  const routes = Object.fromEntries(SERVICES.map((svc) => [
+    `POST ${svc.path}`,
+    {
+      accepts: { scheme: "exact", price: `$${svc.priceUsd}`, network: "eip155:8453" as const, payTo: payTo(env) },
+      resource: `${origin}${svc.path}`,
+      description: svc.description,
       mimeType: "application/json",
       serviceName: "Rever",
-      tags: ["ui", "design", "website", "clone", "prompt", "screenshot", "frontend"],
+      tags: svc.tags,
       iconUrl: `${origin}/favicon.ico`,
       unpaidResponseBody: () => ({
         contentType: "application/json",
         body: {
           error: "Payment Required",
+          price: `$${svc.priceUsd}`,
           howToPay:
-            `Pay $${AGENT_PRICE_USD} in USDC on Base with any x402 client (read the PAYMENT-REQUIRED header, retry with PAYMENT-SIGNATURE). ` +
-            `Alternatives: send USDC to ${payTo(env)} and retry with "X-Payment: <tx hash>", or buy a pack at ${origin} and send "X-Access-Key". ` +
+            `Pay $${svc.priceUsd} in USDC on Base with any x402 client (read the PAYMENT-REQUIRED header, retry with PAYMENT-SIGNATURE). ` +
             `Docs: ${origin}/llms-full.txt`,
         },
       }),
       extensions: {
         ...declareDiscoveryExtension({
           bodyType: "json",
-          input: { url: "https://stripe.com" },
-          inputSchema: {
-            type: "object",
-            properties: { url: { type: "string", description: "Public http(s) URL of the page to recreate" } },
-            required: ["url"],
-          },
-          output: {
-            example: { prompt: "Build a landing page with a sticky dark header, ...", url: "https://stripe.com/" },
-            schema: {
-              type: "object",
-              properties: {
-                prompt: { type: "string", description: "Design brief to give to a code-generation model" },
-                url: { type: "string" },
-              },
-              required: ["prompt", "url"],
-            },
-          },
+          input: svc.inputExample,
+          inputSchema: svc.inputSchema,
+          output: { example: svc.outputExample, schema: svc.outputSchema },
         }),
       },
     },
-  };
+  ]));
 
   const http = new x402HTTPResourceServer(server, routes);
   const { init } = prepareHttpServer(http, undefined, true);

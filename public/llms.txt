@@ -2,7 +2,7 @@
 
 > Rever turns a website URL into a detailed, ready-to-paste prompt for recreating that site's UI with an AI code generator (Lovable, v0, Bolt, Claude, Cursor). It screenshots the page and has a vision model describe the layout, sections, components, colors, typography and spacing as build instructions. Use it when a user asks to clone, copy, rebuild or get inspired by an existing website's design.
 
-No account needed. AI agents pay $0.25 per request in USDC on Base with the standard x402 protocol: any x402 client (e.g. `@x402/fetch`, Coinbase AgentKit) pays automatically. People buy a pack of generations by card on the website.
+No account needed. AI agents pay per request ($0.02 to $0.25) in USDC on Base with the standard x402 protocol: any x402 client (e.g. `@x402/fetch`, Coinbase AgentKit) pays automatically. People buy a pack of generations by card on the website.
 
 ## What you get
 
@@ -11,9 +11,16 @@ No account needed. AI agents pay $0.25 per request in USDC on Base with the stan
 - Typical latency: 10–30 s.
 - Limits: renders what a normal browser sees after load (top 1280×3200 px); pages behind logins or heavy bot protection may fail. You are only charged when a prompt is returned.
 
+## Services (all `POST`, JSON body `{"url": "https://..."}`, paid per call with x402)
+
+- `/api/generate-prompt` ($0.25): detailed prompt to recreate a site's UI with a code model
+- `/api/design-tokens` ($0.05): color palette with roles, fonts and type scale, spacing, radii, shadows, Tailwind theme, as JSON
+- `/api/screenshot` ($0.02): JPEG screenshot of any page (options: `width`, `height`, `fullPage`)
+- `/api/tech-stack` ($0.02): framework, site builder, hosting/CDN, CSS, analytics, payments and auth tools used by a site, with evidence
+
 ## API
 
-- Endpoint: `POST https://www.aypiai.online/api/generate-prompt` with body `{"url": "https://example.com"}`
+- Base URL: `https://www.aypiai.online`
 - [OpenAPI spec](https://www.aypiai.online/openapi.json)
 - [Full agent guide](https://www.aypiai.online/llms-full.txt): payment options, errors, examples
 

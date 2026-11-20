@@ -22,6 +22,14 @@ Response 200:
 
 Price: $0.25 per successful call. You are not charged if the screenshot or model step fails.
 
+## Other services (x402 only)
+
+Same request shape: POST JSON `{"url": "https://..."}`.
+
+- POST /api/design-tokens ($0.05) → `{"url", "tokens": {"colors": [{"hex","role","usage"}], "typography": {...}, "spacing": {...}, "radii": {...}, "shadows": [...], "mode", "style", "tailwind": {"theme": {"extend": {...}}}}}`
+- POST /api/screenshot ($0.02), optional `width` (320-2560), `height` (300-8000), `fullPage` (bool) → `{"url", "image": "data:image/jpeg;base64,...", "imageUrl", "width", "fullPage", "bytes"}`
+- POST /api/tech-stack ($0.02) → `{"url", "finalUrl", "title", "generator", "technologies": [{"name","category","evidence"}]}`
+
 ## Option 1 — x402 (recommended, automatic)
 
 Rever implements x402 v2 with the `exact` scheme on Base mainnet (`eip155:8453`), USDC asset `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, amount `250000` (6 decimals = $0.25).

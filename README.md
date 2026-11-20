@@ -6,6 +6,15 @@ Paste a website URL, get a detailed prompt to recreate its UI with an AI code ge
 
 Rever takes a full-page screenshot of the URL and has Claude Haiku describe the layout, sections, components, colors, typography and spacing as build instructions. The output is a prompt, not code, so it works with any stack.
 
+## Services
+
+| Endpoint | What it returns | Price (x402) |
+|---|---|---|
+| `POST /api/generate-prompt` | Prompt to recreate a site's UI | $0.25 |
+| `POST /api/design-tokens` | Palette, fonts, spacing, radii, shadows, Tailwind theme (JSON) | $0.05 |
+| `POST /api/screenshot` | JPEG screenshot (width, height, fullPage) | $0.02 |
+| `POST /api/tech-stack` | Framework, builder, hosting, CSS, analytics, payments, auth | $0.02 |
+
 ## Three ways to use it
 
 | Who | How | Pays with |
