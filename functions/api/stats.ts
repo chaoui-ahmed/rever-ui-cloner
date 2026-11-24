@@ -24,6 +24,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     topPaths: await q(env, "SELECT path, COUNT(*) n FROM bot_visits WHERE created_at >= datetime('now', ?) GROUP BY path ORDER BY n DESC LIMIT 40", since),
     apiCalls: await q(env, "SELECT path, status, COUNT(*) n FROM bot_visits WHERE created_at >= datetime('now', ?) AND (path LIKE '/api/%' OR path = '/mcp') GROUP BY path, status ORDER BY n DESC LIMIT 60", since),
     recentApi: await q(env, "SELECT created_at, bot, path, status, user_agent FROM bot_visits WHERE (path LIKE '/api/%' OR path = '/mcp') AND path != '/api/stats' ORDER BY id DESC LIMIT 40"),
+    agentsByUa: await q(env, "SELECT substr(user_agent, 1, 60) ua, COUNT(*) n, SUM(path = '/mcp') mcp, SUM(path LIKE '/api/%') api FROM bot_visits WHERE created_at >= datetime('now', ?) GROUP BY ua ORDER BY n DESC LIMIT 40", since),
+    paidSuccess: await q(env, "SELECT date(created_at) d, path, COUNT(*) n FROM bot_visits WHERE created_at >= datetime('now', ?) AND path LIKE '/api/%' AND status = 200 AND path NOT IN ('/api/stats', '/api/balance') GROUP BY d, path ORDER BY d", since),
     x402Payments: await q(env, "SELECT created_at, path, amount_units, payer, tx FROM x402_payments ORDER BY id DESC LIMIT 100"),
     legacyPayments: await q(env, "SELECT created_at, payer, amount_units, target_url FROM agent_payments ORDER BY created_at DESC LIMIT 50"),
     freeUsageByDay: await q(env, "SELECT day, COUNT(*) users, SUM(calls) calls FROM free_usage GROUP BY day ORDER BY day DESC LIMIT 30"),
