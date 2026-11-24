@@ -66,6 +66,10 @@ async function callTool(env: Env, request: Request, tool: (typeof TOOLS)[0], arg
       try {
         const { url: _u, ...rest } = args;
         const data = (await freeRun(env, url, rest)) as Record<string, any>;
+        try {
+          await env.DB.prepare("CREATE TABLE IF NOT EXISTS free_calls (id INTEGER PRIMARY KEY AUTOINCREMENT, tool TEXT, target TEXT, user_agent TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')))").run();
+          await env.DB.prepare("INSERT INTO free_calls (tool, target, user_agent) VALUES (?, ?, ?)").bind(tool.name, new URL(url).hostname, (request.headers.get("User-Agent") ?? "").slice(0, 200)).run();
+        } catch { /* logging only */ }
         return {
           content: [{ type: "text", text: JSON.stringify(data, null, 2) + `\n\n(Free tier: ${left} free calls left today. More: https://www.aypiai.online)` }],
           structuredContent: data,
