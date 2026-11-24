@@ -26,6 +26,7 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
     recentApi: await q(env, "SELECT created_at, bot, path, status, user_agent FROM bot_visits WHERE (path LIKE '/api/%' OR path = '/mcp') AND path != '/api/stats' ORDER BY id DESC LIMIT 40"),
     agentsByUa: await q(env, "SELECT substr(user_agent, 1, 60) ua, COUNT(*) n, SUM(path = '/mcp') mcp, SUM(path LIKE '/api/%') api FROM bot_visits WHERE created_at >= datetime('now', ?) GROUP BY ua ORDER BY n DESC LIMIT 40", since),
     paidSuccess: await q(env, "SELECT date(created_at) d, path, COUNT(*) n FROM bot_visits WHERE created_at >= datetime('now', ?) AND path LIKE '/api/%' AND status = 200 AND path NOT IN ('/api/stats', '/api/balance') GROUP BY d, path ORDER BY d", since),
+    uaSearch: url.searchParams.get("ua") ? await q(env, "SELECT DISTINCT user_agent FROM bot_visits WHERE user_agent LIKE ? LIMIT 10", `%${url.searchParams.get("ua")}%`) : [],
     mcpByUaDay: await q(env, "SELECT date(created_at) d, substr(user_agent, 1, 90) ua, COUNT(*) n, MIN(created_at) first, MAX(created_at) last FROM bot_visits WHERE path = '/mcp' AND date(created_at) IN ('2026-11-22', '2026-11-23') GROUP BY d, ua ORDER BY d, n DESC"),
     freeCalls: await q(env, "SELECT created_at, tool, target, user_agent FROM free_calls ORDER BY id DESC LIMIT 100"),
     x402Payments: await q(env, "SELECT created_at, path, amount_units, payer, tx FROM x402_payments ORDER BY id DESC LIMIT 100"),
