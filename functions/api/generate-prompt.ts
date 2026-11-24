@@ -5,6 +5,7 @@ import {
 import { withX402, x402Enabled } from "../_x402";
 import { generateUiPrompt, UpstreamError } from "../_services";
 import { methodNotAllowed, readJsonBody } from "../_paid";
+import { accessKeyFrom, resolveKey, charge, refund, usd } from "../_credits";
 
 const withCors = (res: Response) => {
   const out = new Response(res.body, res);
@@ -28,12 +29,25 @@ const handlePost: PagesFunction<Env> = async ({ request, env }) => {
   const badUrl = () => json({ error: "Valid public http(s) URL required in field \"url\"" }, 400);
 
   const resource = new URL(request.url).origin + "/api/generate-prompt";
-  const accessKey = request.headers.get("X-Access-Key")?.trim();
+  const accessKey = accessKeyFrom(request) ?? undefined;
   const txHash = request.headers.get("X-Payment")?.trim().toLowerCase();
 
   // ---- Human with a Stripe pack ----
   if (accessKey) {
     if (!url) return badUrl();
+    const state = await resolveKey(env, accessKey);
+    if (state.kind === "error") return json({ error: state.reason }, state.status);
+    if (state.kind === "credits") {
+      const units = Number(AGENT_PRICE_UNITS);
+      const left = await charge(env, accessKey, units);
+      if (left === null) return json({ error: `Not enough credit: this call costs $${usd(units)}, balance $${usd(state.balanceUnits)}. Top up at https://www.aypiai.online/credits` }, 402);
+      try {
+        return json({ prompt: await generate(env, url), url, creditsRemainingUsd: usd(left) });
+      } catch (err) {
+        await refund(env, accessKey, units);
+        return json({ error: (err as Error).message, charged: false }, err instanceof UpstreamError ? 502 : 500);
+      }
+    }
     const redeemed = await redeemAccessKey(env, accessKey);
     if (!redeemed.ok) return json({ error: redeemed.reason }, redeemed.status);
 

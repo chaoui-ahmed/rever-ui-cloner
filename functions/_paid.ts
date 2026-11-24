@@ -2,7 +2,8 @@
 // The paywall runs before request validation, so unpaid probes always get a 402.
 import { type Env, json, corsHeaders, validateTargetUrl } from "./_shared";
 import { withX402 } from "./_x402";
-import { UpstreamError } from "./_services";
+import { UpstreamError, SERVICES } from "./_services";
+import { accessKeyFrom, resolveKey, charge, refund, usd, UNITS_PER_USD } from "./_credits";
 
 const withCors = (res: Response) => {
   const out = new Response(res.body, res);
@@ -34,6 +35,32 @@ export function paidEndpoint(
     if (request.method !== "POST") return methodNotAllowed(docsHint);
 
     const body = await readJsonBody(request);
+
+    // ---- Prepaid card credits (X-Access-Key or Authorization: Bearer cs_...) ----
+    const key = accessKeyFrom(request);
+    if (key) {
+      const path = new URL(request.url).pathname.replace(/\/$/, "");
+      const svc = SERVICES.find((s) => s.path === path);
+      if (!svc) return withCors(json({ error: "Unknown endpoint" }, 404));
+      const state = await resolveKey(env, key);
+      if (state.kind === "error") return withCors(json({ error: state.reason }, state.status));
+      if (state.kind === "legacy") return withCors(json({ error: "This key is an old pack valid on /api/generate-prompt only. Buy credits for all tools at https://www.aypiai.online/credits" }, 402));
+      const url = validateTargetUrl(body.url);
+      if (!url) return withCors(json({ error: "Valid public http(s) URL required in field \"url\"" }, 400));
+      const units = Math.round(Number(svc.priceUsd) * UNITS_PER_USD);
+      const left = await charge(env, key, units);
+      if (left === null) return withCors(json({ error: `Not enough credit: this call costs $${svc.priceUsd}, balance $${usd(state.balanceUnits)}. Top up at https://www.aypiai.online/credits` }, 402));
+      try {
+        const out = json(await run(env, url, body));
+        out.headers.set("X-Credits-Remaining-Usd", String(usd(left)));
+        out.headers.set("X-Credits-Charged-Usd", svc.priceUsd);
+        return withCors(out);
+      } catch (err) {
+        await refund(env, key, units);
+        return withCors(json({ error: (err as Error).message, charged: false }, err instanceof UpstreamError ? 502 : 500));
+      }
+    }
+
     const res = await withX402(env, request, body, async () => {
       // Runs only after payment is verified; a 4xx/5xx here cancels the payment (never charged).
       const url = validateTargetUrl(body.url);

@@ -75,13 +75,17 @@ No account needed. AI agents pay per request ($0.001 to $0.05) in USDC on Base w
 - [x402 discovery manifest](https://www.aypiai.online/.well-known/x402.json)
 - [Full agent guide](https://www.aypiai.online/llms-full.txt): payment options, errors, examples
 
+## Pay by card (no crypto)
+
+Buy prepaid credits at https://www.aypiai.online/credits ($5, $20 or $50, bigger packs get a bonus). You get a key (`cs_live_...`) valid on every tool: send it as `X-Access-Key: <key>` (or `Authorization: Bearer <key>`) on any API call, or as `access_key` in any MCP tool call. Each successful call deducts its price; failed calls are free. Balance: `GET /api/balance` with the same header.
+
 ## Payment (x402)
 
 1. Call the endpoint without payment → HTTP 402 with a `PAYMENT-REQUIRED` header (x402 v2): scheme `exact`, network `eip155:8453` (Base), asset USDC, the amount of the endpoint (e.g. `1000` = $0.001).
 2. Your x402 client signs a USDC authorization (gasless for you) and retries with the `PAYMENT-SIGNATURE` header.
 3. You get the JSON result, plus a `PAYMENT-RESPONSE` header with the settlement receipt.
 
-Other ways to pay: for `/api/generate-prompt` only: for `/api/generate-prompt` only: for `/api/generate-prompt` only: send 0.05 USDC on Base to the `payTo` address and retry with `X-Payment: <transaction hash>`, or use a pack key in `X-Access-Key`.
+Other ways to pay: for `/api/generate-prompt` only: send 0.05 USDC on Base to the `payTo` address and retry with `X-Payment: <transaction hash>`, or use a pack key in `X-Access-Key`.
 
 ## Tools
 

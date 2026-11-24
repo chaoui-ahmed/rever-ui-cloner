@@ -11,6 +11,10 @@ const PAY_TO = "0x4b1965f9d407ce9f032e9e2465afe7ff8bfb7f3d";
 
 const toolName = (path: string) => (path === "/api/generate-prompt" ? "clone_ui" : path.replace("/api/", "").replace(/-/g, "_"));
 const PAYMENT_ARG = {
+  access_key: {
+    type: "string",
+    description: "Prepaid credit key (cs_live_...) bought by card at https://www.aypiai.online/credits. Works on every tool; each call deducts its price.",
+  },
   payment: {
     type: "string",
     description: "x402 payment: the base64 PAYMENT-SIGNATURE value signed for the requirements returned by an unpaid call (USDC on Base, gasless). Omit on the first call to get the price and requirements.",
@@ -21,7 +25,6 @@ const TOOLS = SERVICES.map((s) => {
   const schema = s.inputSchema as { type: string; properties: Record<string, unknown>; required?: string[] };
   const extra = s.path === "/api/generate-prompt"
     ? {
-        access_key: { type: "string", description: "Optional. Access key of a pack bought by card on https://www.aypiai.online (cs_live_...)." },
         payment_tx: { type: "string", description: `Optional. Base tx hash of a direct ${s.priceUsd} USDC transfer to ${PAY_TO} (single use).` },
       }
     : {};
@@ -29,8 +32,8 @@ const TOOLS = SERVICES.map((s) => {
     name: toolName(s.path),
     title: s.description.split(/(?<=[.:])\s/)[0].replace(/[.:]$/, "").slice(0, 80),
     description: FREE_RUNNERS.has(s.path)
-      ? `${s.description} Free: ${FREE_PER_DAY} calls/day per user across free tools, no payment needed. Above that: $${s.priceUsd} per call (x402, USDC on Base).`
-      : `${s.description} Price: $${s.priceUsd} per call (x402, USDC on Base). Without payment, returns the payment requirements.`,
+      ? `${s.description} Free: ${FREE_PER_DAY} calls/day per user across free tools, no payment needed. Above that: $${s.priceUsd} per call, with card credits (access_key) or x402.`
+      : `${s.description} Price: $${s.priceUsd} per call (x402, USDC on Base). Pay with access_key (card credits) or x402. Without payment, returns how to pay.`,
     inputSchema: { type: "object", properties: { ...schema.properties, ...extra, ...PAYMENT_ARG }, required: schema.required ?? ["url"] },
     annotations: { readOnlyHint: true, openWorldHint: true },
     _meta: { path: s.path, priceUsd: s.priceUsd, tags: s.tags, free: FREE_RUNNERS.has(s.path) },
@@ -101,6 +104,9 @@ async function callTool(env: Env, request: Request, tool: (typeof TOOLS)[0], arg
       : JSON.stringify(data, null, 2);
     return { content: [{ type: "text", text }], structuredContent: data, isError: false, ...(receipt ? { _meta: { "x402/payment-response": unb64(receipt) ?? receipt } } : {}) };
   }
+  if (res.status === 402 && args.access_key) {
+    return { isError: true, content: [{ type: "text", text: `${data.error ?? "Not enough credit"} (not charged)` }] };
+  }
   if (res.status === 402) {
     const header = res.headers.get("payment-required");
     const requirements = header ? unb64(header) : null;
@@ -118,7 +124,7 @@ async function callTool(env: Env, request: Request, tool: (typeof TOOLS)[0], arg
           (freeLimitHit ? `Free tier used up for today (${FREE_PER_DAY} calls/day, resets at 00:00 UTC). ` : "") +
           `Payment required${reason && !/payment required/i.test(reason) ? ` (${reason})` : ""}: $${tool._meta.priceUsd} in USDC on Base (x402).\n` +
           `Sign one of the accepted requirements below with an x402 client (EIP-3009, no gas needed) and call this tool again with the base64 PAYMENT-SIGNATURE value in "payment". ` +
-          `Or POST directly to https://www.aypiai.online${path} with any x402 client.${alt}\n\nPAYMENT-REQUIRED (base64): ${header ?? "n/a"}\n\n` +
+          `Or POST directly to https://www.aypiai.online${path} with any x402 client.${alt}\n\nNo crypto? Buy card credits at https://www.aypiai.online/credits ($5 minimum, valid on all tools) and pass the key in "access_key".\n\nPAYMENT-REQUIRED (base64): ${header ?? "n/a"}\n\n` +
           JSON.stringify(requirements?.accepts ?? [], null, 2),
       }],
     };

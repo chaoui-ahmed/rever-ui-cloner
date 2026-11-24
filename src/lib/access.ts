@@ -1,10 +1,11 @@
 // Access key = Stripe Checkout Session id, kept in this browser only.
 const STORAGE_KEY = "rever_access_key";
 
+// Card credits, valid on every tool. A UI-recreation prompt costs $0.05 of credit.
 export const STRIPE_PACKS = [
-  { id: "starter", name: "Starter", generations: 10, price: "9,99 €", url: "https://buy.stripe.com/aFaeVc2Regul0Ei1PSawo02" },
-  { id: "pro", name: "Pro", generations: 25, price: "19,99 €", url: "https://buy.stripe.com/3cI7sKbnKgul3Qu668awo03" },
-  { id: "pro_plus", name: "Pro+", generations: 70, price: "49,99 €", url: "https://buy.stripe.com/4gM4gy2Re7XPbiW1PSawo04" },
+  { id: "starter", name: "Starter", generations: 100, price: "$5", url: "/api/buy?pack=5&return=app" },
+  { id: "pro", name: "Pro", generations: 440, price: "$20", url: "/api/buy?pack=20&return=app" },
+  { id: "pro_plus", name: "Pro+", generations: 1200, price: "$50", url: "/api/buy?pack=50&return=app" },
 ] as const;
 
 export function getAccessKey(): string | null {
@@ -39,5 +40,5 @@ export async function fetchBalance(key: string): Promise<number> {
   const res = await fetch("/api/balance", { headers: { "X-Access-Key": key } });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "Invalid access key");
-  return data.remaining;
+  return typeof data.balanceUsd === "number" ? Math.floor((data.balanceUsd + 1e-9) / 0.05) : data.remaining;
 }

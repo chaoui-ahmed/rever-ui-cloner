@@ -71,7 +71,7 @@ const BuyDialog = ({ open, onOpenChange, accessKey, onUseKey, onForgetKey }: Buy
             </p>
           )}
           <p className="text-xs text-muted-foreground">
-            AI agents can pay $0.05 per call in USDC with x402 instead. See <a className="underline" href="/llms.txt">llms.txt</a>.
+            Credits work on all 40 API and MCP tools. AI agents can also pay per call in USDC with x402. See <a className="underline" href="/llms.txt">llms.txt</a>.
           </p>
         </div>
       </DialogContent>

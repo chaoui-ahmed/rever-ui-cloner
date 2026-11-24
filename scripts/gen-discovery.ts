@@ -86,7 +86,7 @@ llms = llms.replace(/## What you get[\s\S]*?(?=## Services)/, `## How it works\n
 llms = llms.replace(/## Services[\s\S]*?(?=## API)/, `## Services (${n}, all paid per call with x402)\n\n${servicesMd}\n\n`);
 llms = llms.replace(/amount `\d+` \(\$[\d.]+\)/, "the amount of the endpoint (e.g. `1000` = $0.001)");
 llms = llms.replace(/You get the prompt, plus/, "You get the JSON result, plus");
-llms = llms.replace(/send [\d.]+ USDC on Base to the `payTo` address and retry with `X-Payment: <transaction hash>`, or use a pack key in `X-Access-Key`\./,
+llms = llms.replace(/(?<!only: )send [\d.]+ USDC on Base to the `payTo` address and retry with `X-Payment: <transaction hash>`, or use a pack key in `X-Access-Key`\./,
   `for \`/api/generate-prompt\` only: send ${SERVICES[0].priceUsd} USDC on Base to the \`payTo\` address and retry with \`X-Payment: <transaction hash>\`, or use a pack key in \`X-Access-Key\`.`);
 writeFileSync("public/llms.txt", llms);
 
