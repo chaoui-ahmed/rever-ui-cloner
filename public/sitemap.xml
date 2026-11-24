@@ -1,11 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://www.aypiai.online/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://www.aypiai.online/showcase</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.aypiai.online/credits</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.aypiai.online/showcase</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://www.aypiai.online/llms.txt</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.aypiai.online/llms-full.txt</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.aypiai.online/showcase.json</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://www.aypiai.online/openapi.json</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://www.aypiai.online/.well-known/x402.json</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://www.aypiai.online/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://www.aypiai.online/openapi.json</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.aypiai.online/.well-known/x402</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://www.aypiai.online/.well-known/agent-card.json</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://www.aypiai.online/agents.json</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://www.aypiai.online/tools/generate-prompt</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/design-tokens</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/screenshot</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/tech-stack</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/brand-kit</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/page-markdown</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/meta</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/contacts</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/social-links</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/links</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/broken-links</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/sitemap</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/robots</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/security-headers</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/https-check</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/redirects</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/headers</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/status</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/language</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/text-stats</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/structured-data</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/og-image</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/feeds</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/images</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/headings</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/seo-audit</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/favicon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/dns</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/email-security</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/domain-whois</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/ai-readiness</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/page-text</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/forms</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/trackers</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/company-info</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/key-pages</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/page-weight</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/wayback</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/crypto-site-check</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/terms</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>

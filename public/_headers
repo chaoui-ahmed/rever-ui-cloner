@@ -2,7 +2,7 @@
 # (No _redirects needed: without a 404.html, Pages serves index.html for unknown routes — SPA mode.)
 
 /
-  Link: </llms.txt>; rel="alternate"; type="text/plain", </openapi.json>; rel="service-desc"; type="application/json"
+  Link: </llms.txt>; rel="alternate"; type="text/plain", </openapi.json>; rel="service-desc"; type="application/json", </.well-known/agent-card.json>; rel="agent-card"; type="application/json", </.well-known/x402>; rel="x402"; type="application/json", </tools>; rel="index"
 
 /llms.txt
   Content-Type: text/plain; charset=utf-8

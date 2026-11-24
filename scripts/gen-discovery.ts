@@ -113,3 +113,15 @@ card.tools = [
 card.pricing = { amount: `${Math.min(...prices)}-${Math.max(...prices)}`, currency: "USDC", network: "base", protocol: "x402" };
 writeFileSync("public/.well-known/mcp.json", JSON.stringify(card, null, 2) + "\n");
 console.log(`mcp.json: ${card.tools.length} tools`);
+
+// ---------- sitemap.xml ----------
+const slugOf = (p: string) => p.replace("/api/", "");
+const urls: [string, string, string][] = [
+  ["/", "weekly", "1.0"], ["/tools", "weekly", "0.9"], ["/credits", "monthly", "0.7"], ["/showcase", "daily", "0.6"],
+  ["/llms.txt", "weekly", "0.8"], ["/llms-full.txt", "weekly", "0.7"], ["/openapi.json", "weekly", "0.7"],
+  ["/.well-known/x402", "weekly", "0.6"], ["/.well-known/agent-card.json", "weekly", "0.5"], ["/agents.json", "weekly", "0.5"],
+  ...SERVICES.map((s) => [`/tools/${slugOf(s.path)}`, "weekly", "0.8"] as [string, string, string]),
+  ["/terms", "yearly", "0.2"],
+];
+writeFileSync("public/sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, f, p]) => `  <url><loc>${SITE}${u}</loc><changefreq>${f}</changefreq><priority>${p}</priority></url>`).join("\n")}\n</urlset>\n`);
+console.log(`sitemap: ${urls.length} urls`);

@@ -68,6 +68,14 @@ No account needed. AI agents pay per request ($0.001 to $0.05) in USDC on Base w
 - `/api/brand-kit` ($0.01): Get a website's brand kit in one call
 - `/api/screenshot` ($0.01): Screenshot any public web page
 
+## Discovery
+
+- One page per tool, with examples: https://www.aypiai.online/tools
+- x402 catalog: https://www.aypiai.online/.well-known/x402 (also /.well-known/x402.json)
+- A2A agent card: https://www.aypiai.online/.well-known/agent-card.json
+- MCP server card: https://www.aypiai.online/.well-known/mcp/server-card.json
+- agents.json: https://www.aypiai.online/agents.json
+
 ## API
 
 - Base URL: `https://www.aypiai.online`
