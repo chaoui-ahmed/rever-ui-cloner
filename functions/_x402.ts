@@ -185,6 +185,13 @@ export async function withX402(
   }
   const out = new Response(responseBody, { status: res.status, headers: res.headers });
   for (const [k, v] of Object.entries(settle.headers)) out.headers.set(k, v);
+  try {
+    const pr = Object.entries(settle.headers).find(([k]) => k.toLowerCase() === "payment-response")?.[1];
+    const receipt = pr ? JSON.parse(atob(pr)) : {};
+    await env.DB.prepare("CREATE TABLE IF NOT EXISTS x402_payments (id INTEGER PRIMARY KEY AUTOINCREMENT, tx TEXT, payer TEXT, amount_units TEXT, path TEXT, network TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')))").run();
+    await env.DB.prepare("INSERT INTO x402_payments (tx, payer, amount_units, path, network) VALUES (?, ?, ?, ?, ?)")
+      .bind(receipt.transaction ?? null, receipt.payer ?? null, String((paymentRequirements as any).amount ?? ""), new URL(request.url).pathname, receipt.network ?? null).run();
+  } catch { /* logging must never break a paid call */ }
   out.headers.set("Cache-Control", withPrivateCacheControl(out.headers.get("Cache-Control")));
   return out;
 }

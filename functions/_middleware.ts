@@ -12,7 +12,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, next, waitUn
     ? new Response(null, { status: 405, headers: { Allow: "POST, OPTIONS" } })
     : await next();
   const ua = request.headers.get("User-Agent") ?? "";
-  const match = ua.match(BOT_PATTERN);
+  const match = ua.match(BOT_PATTERN) ?? (isApi && request.method !== "OPTIONS" ? ([ua, request.headers.get("mcp-protocol-version") ? "mcp-client" : "api-client"] as unknown as RegExpMatchArray) : null);
   if (match && env.DB) {
     const url = new URL(request.url);
     waitUntil(
