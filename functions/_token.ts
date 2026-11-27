@@ -43,6 +43,49 @@ async function getJson(url: string, ms = 8000): Promise<any | null> {
   }
 }
 
+
+// GeckoTerminal fallback (DexScreener rate-limits shared cloud IPs). Returns DexScreener-shaped pairs.
+const GECKO_NET: Record<string, string> = { ethereum: "eth", bsc: "bsc", base: "base", arbitrum: "arbitrum", polygon: "polygon_pos", optimism: "optimism", avalanche: "avax", solana: "solana" };
+const FROM_GECKO: Record<string, string> = Object.fromEntries(Object.entries(GECKO_NET).map(([k, v]) => [v, k]));
+
+async function geckoPairs(address: string, chain: string | null): Promise<any[]> {
+  const url = chain
+    ? `https://api.geckoterminal.com/api/v2/networks/${GECKO_NET[chain]}/tokens/${address}/pools?page=1`
+    : `https://api.geckoterminal.com/api/v2/search/pools?query=${address}&page=1`;
+  const d = await getJson(url);
+  return (d?.data ?? []).map((p: any) => {
+    const a = p.attributes ?? {};
+    const net = chain ? GECKO_NET[chain] : String(p.relationships?.network?.data?.id ?? p.id?.split("_")[0] ?? "");
+    const ch = FROM_GECKO[net] ?? net;
+    return {
+      chainId: ch,
+      dexId: p.relationships?.dex?.data?.id ?? null,
+      url: `https://www.geckoterminal.com/${net}/pools/${a.address}`,
+      baseToken: { name: (a.name ?? "").split(" / ")[0] || null, symbol: (a.name ?? "").split(" / ")[0] || null },
+      priceUsd: a.base_token_price_usd ?? null,
+      liquidity: { usd: a.reserve_in_usd ? Number(a.reserve_in_usd) : null },
+      volume: { h24: a.volume_usd?.h24 ? Number(a.volume_usd.h24) : null },
+      marketCap: a.market_cap_usd ? Number(a.market_cap_usd) : null,
+      fdv: a.fdv_usd ? Number(a.fdv_usd) : null,
+      pairCreatedAt: a.pool_created_at ? Date.parse(a.pool_created_at) : null,
+      txns: { h24: a.transactions?.h24 ?? null },
+      gecko: net,
+    };
+  });
+}
+
+async function geckoInfo(net: string, address: string) {
+  const d = await getJson(`https://api.geckoterminal.com/api/v2/networks/${net}/tokens/${address}/info`);
+  const a = d?.data?.attributes;
+  if (!a) return { websites: [], socials: [] };
+  const socials = [
+    a.twitter_handle && { type: "twitter", url: `https://x.com/${a.twitter_handle}` },
+    a.telegram_handle && { type: "telegram", url: `https://t.me/${a.telegram_handle}` },
+    a.discord_url && { type: "discord", url: a.discord_url },
+  ].filter(Boolean);
+  return { websites: (a.websites ?? []).map((url: string) => ({ url })), socials, name: a.name, symbol: a.symbol };
+}
+
 const num = (v: unknown) => (v === undefined || v === null || v === "" ? null : Number(v));
 const flag = (v: unknown) => v === "1" || v === 1 || v === true;
 
@@ -74,8 +117,10 @@ export const TOKEN_CHECK: Micro = {
   run: async (env, address, body) => {
     diag.length = 0;
     const isSol = !EVM.test(address);
+    let pairs: any[] = [];
     const dex = await getJson(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
-    const pairs: any[] = (dex?.pairs ?? []).filter((p: any) => p?.baseToken?.address?.toLowerCase() === address.toLowerCase() || p?.quoteToken?.address?.toLowerCase() === address.toLowerCase());
+    if (dex?.pairs) pairs = dex.pairs.filter((p: any) => p?.baseToken?.address?.toLowerCase() === address.toLowerCase() || p?.quoteToken?.address?.toLowerCase() === address.toLowerCase());
+    if (!pairs.length) pairs = await geckoPairs(address, normChain(body.chain));
     let chain = normChain(body.chain);
     if (!chain) {
       const best = [...pairs].sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0))[0];
@@ -86,6 +131,7 @@ export const TOKEN_CHECK: Micro = {
     const cfg = CHAINS[chain];
     const chainPairs = pairs.filter((p) => normChain(p.chainId) === chain).sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0));
     const main = chainPairs[0];
+    if (main && !main.info && main.gecko) main.info = await geckoInfo(main.gecko, address);
 
     const [gp, hp] = await Promise.all([
       getJson(chain === "solana"
@@ -183,8 +229,8 @@ export const TOKEN_CHECK: Micro = {
     return {
       address,
       chain,
-      name: main?.baseToken?.name ?? sec?.token_name ?? sec?.metadata?.name ?? null,
-      symbol: main?.baseToken?.symbol ?? sec?.token_symbol ?? sec?.metadata?.symbol ?? null,
+      name: main?.info?.name ?? main?.baseToken?.name ?? sec?.token_name ?? sec?.metadata?.name ?? null,
+      symbol: main?.info?.symbol ?? main?.baseToken?.symbol ?? sec?.token_symbol ?? sec?.metadata?.symbol ?? null,
       score,
       verdict: honeypot === true || score < 30 ? "danger" : score < 50 ? "high risk" : score < 75 ? "caution" : "looks ok",
       honeypot,
@@ -202,7 +248,7 @@ export const TOKEN_CHECK: Micro = {
       website,
       redFlags: red,
       greenFlags: green,
-      sources: ["GoPlus Security", ...(hp ? ["honeypot.is"] : []), ...(main ? ["DexScreener"] : []), ...(website ? ["Rever crypto-site-check"] : [])],
+      sources: ["GoPlus Security", ...(hp ? ["honeypot.is"] : []), ...(main ? [main.gecko ? "GeckoTerminal" : "DexScreener"] : []), ...(website ? ["Rever crypto-site-check"] : [])],
       disclaimer: "Automated heuristics from public on-chain and web data. Not financial advice.",
     };
   },
