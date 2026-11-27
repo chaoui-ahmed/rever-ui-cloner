@@ -7,7 +7,7 @@ const SITE = "https://www.aypiai.online";
 const NAME = "Rever";
 const TAGLINE = "Website intelligence for AI agents";
 const SUMMARY =
-  `${SERVICES.length} pay-per-call tools that take a URL and return JSON: page to markdown, contacts, social links, SEO, security, DNS, WHOIS, tech stack, crypto project trust check, design tokens, screenshots and UI-recreation prompts. ` +
+  `${SERVICES.length} pay-per-call tools that take a URL and return JSON: page to markdown, contacts, social links, SEO, security, DNS, WHOIS, tech stack, token safety check (honeypot, taxes, liquidity), crypto project trust check, design tokens, screenshots and UI-recreation prompts. ` +
   `$0.001 to $0.05 per call. Pay with x402 (USDC on Base), prepaid card credits, or ${FREE_PER_DAY} free MCP calls/day.`;
 
 export const slug = (s: ServiceDef) => s.path.replace("/api/", "");

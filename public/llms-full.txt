@@ -330,6 +330,14 @@ Input: `{"url":"https://uniswap.org","contract":"0x1f9840a85d5af5bf1d1762f925bda
 
 Output: `{"url":"https://uniswap.org/","score":86,"verdict":"low risk signals","domainAgeDays":2400,"firstArchived":"2018-11-02","socials":{"x":["https://x.com/Uniswap"],"github":["https://github.com/Uniswap"]},"auditsMentioned":["openzeppelin"],"contractsOnPage":[],"contractListed":null,"redFlags":[],"greenFlags":["Domain older than 1 year","GitHub linked"]}`
 
+### POST /api/token-check ($0.02)
+
+Is this token safe to buy? One call returns a 0-100 safety score and verdict for any token contract (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana): honeypot test (can you sell?), buy/sell tax, mint/pause/blacklist/owner powers, proxy and open-source status, liquidity and LP lock, holder concentration, pair age, volume, plus a check of the project's website (domain age, socials, scam signals). Auto-detects the chain. Heuristics from public on-chain data, not financial advice. Takes 2-8 s.
+
+Input: `{"address":"0x532f27101965dd16442E59d40670FaF5eBB142E4","chain":"base"}`
+
+Output: `{"address":"0x532f...42e4","chain":"base","name":"Brett","symbol":"BRETT","score":88,"verdict":"looks ok","honeypot":false,"buyTaxPct":0,"sellTaxPct":0,"liquidityUsd":12500000,"pairAgeDays":600,"redFlags":[],"greenFlags":["Can be sold (no honeypot)","Contract verified (open source)","Ownership renounced"],"website":{"url":"https://www.basedbrett.com","score":72,"verdict":"low risk signals"}}`
+
 ## Option 1 — x402 (recommended, automatic)
 
 Rever implements x402 v2 with the `exact` scheme on Base mainnet (`eip155:8453`), USDC asset `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, amount in 6-decimal units per endpoint (`50000` = $0.05 for generate-prompt, `1000` = $0.001).

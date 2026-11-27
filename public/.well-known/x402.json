@@ -1,7 +1,7 @@
 {
   "x402Version": 2,
   "name": "Rever",
-  "description": "Website intelligence for AI agents: 39 pay-per-call endpoints ($0.001 to $0.05): scraping, SEO, security, DNS, WHOIS, tech stack, design, screenshots and crypto project trust checks. USDC on Base, no API key.",
+  "description": "Website intelligence for AI agents: 40 pay-per-call endpoints ($0.001 to $0.05): scraping, SEO, security, DNS, WHOIS, tech stack, design, screenshots and crypto project trust checks. USDC on Base, no API key.",
   "website": "https://www.aypiai.online",
   "docs": {
     "llms": "https://www.aypiai.online/llms.txt",
@@ -1420,6 +1420,49 @@
           },
           "required": [
             "url"
+          ]
+        }
+      }
+    },
+    {
+      "resource": "https://www.aypiai.online/api/token-check",
+      "method": "POST",
+      "scheme": "exact",
+      "price": "$0.02",
+      "amount": "20000",
+      "description": "Is this token safe to buy? One call returns a 0-100 safety score and verdict for any token contract (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana): honeypot test (can you sell?), buy/sell tax, mint/pause/blacklist/owner powers, proxy and open-source status, liquidity and LP lock, holder concentration, pair age, volume, plus a check of the project's website (domain age, socials, scam signals). Auto-detects the chain. Heuristics from public on-chain data, not financial advice. Takes 2-8 s.",
+      "tags": [
+        "crypto",
+        "token",
+        "honeypot",
+        "rug-pull",
+        "token-security",
+        "scam-check",
+        "defi",
+        "memecoin",
+        "trading",
+        "due-diligence"
+      ],
+      "input": {
+        "contentType": "application/json",
+        "example": {
+          "address": "0x532f27101965dd16442E59d40670FaF5eBB142E4",
+          "chain": "base"
+        },
+        "schema": {
+          "type": "object",
+          "properties": {
+            "address": {
+              "type": "string",
+              "description": "Token contract address (EVM 0x... or Solana mint)"
+            },
+            "chain": {
+              "type": "string",
+              "description": "Optional: ethereum, base, bsc, arbitrum, polygon, optimism, avalanche or solana. Auto-detected if omitted."
+            }
+          },
+          "required": [
+            "address"
           ]
         }
       }

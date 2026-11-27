@@ -3,8 +3,8 @@
   "info": {
     "title": "Rever API",
     "version": "6.0.0",
-    "summary": "Website intelligence for AI agents: 39 pay-per-call endpoints ($0.001 to $0.05) for scraping, SEO, security, DNS, design and crypto due diligence.",
-    "description": "39 website-analysis endpoints for AI agents, priced $0.001 to $0.05 per call: page to markdown/text, metadata, contacts, social links, sitemap, robots.txt, broken links, SEO and AI-readiness audits, security headers, HTTPS, DNS, email security, WHOIS/RDAP, Wayback history, tech stack, trackers, company info, brand kit, design tokens, screenshots, UI-recreation prompts and a crypto project website trust check. All are POST with JSON {\"url\": \"...\"}. Agents pay with x402 v2 (exact scheme, USDC on Base eip155:8453): the first call returns 402 with a PAYMENT-REQUIRED header; retry with PAYMENT-SIGNATURE. You are never charged for a failed call. Full guide: https://www.aypiai.online/llms-full.txt",
+    "summary": "Website intelligence for AI agents: 40 pay-per-call endpoints ($0.001 to $0.05) for scraping, SEO, security, DNS, design and crypto due diligence.",
+    "description": "40 website-analysis endpoints for AI agents, priced $0.001 to $0.05 per call: page to markdown/text, metadata, contacts, social links, sitemap, robots.txt, broken links, SEO and AI-readiness audits, security headers, HTTPS, DNS, email security, WHOIS/RDAP, Wayback history, tech stack, trackers, company info, brand kit, design tokens, screenshots, UI-recreation prompts and a crypto project website trust check. All are POST with JSON {\"url\": \"...\"}. Agents pay with x402 v2 (exact scheme, USDC on Base eip155:8453): the first call returns 402 with a PAYMENT-REQUIRED header; retry with PAYMENT-SIGNATURE. You are never charged for a failed call. Full guide: https://www.aypiai.online/llms-full.txt",
     "contact": {
       "name": "Ahmed Chaoui",
       "email": "tahachaoui5@gmail.com",
@@ -3486,6 +3486,125 @@
                     "Domain older than 1 year",
                     "GitHub linked"
                   ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid URL."
+          },
+          "402": {
+            "description": "Payment required (x402)."
+          },
+          "502": {
+            "description": "Upstream failure; not charged."
+          }
+        },
+        "x-payment-info": {
+          "protocol": "x402",
+          "price": "0.02",
+          "network": "eip155:8453",
+          "asset": "USDC"
+        }
+      }
+    },
+    "/token-check": {
+      "post": {
+        "operationId": "getTokenCheck",
+        "summary": "Is this token safe to buy? One call returns a 0-100 safety score and verdict for any token",
+        "description": "Is this token safe to buy? One call returns a 0-100 safety score and verdict for any token contract (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana): honeypot test (can you sell?), buy/sell tax, mint/pause/blacklist/owner powers, proxy and open-source status, liquidity and LP lock, holder concentration, pair age, volume, plus a check of the project's website (domain age, socials, scam signals). Auto-detects the chain. Heuristics from public on-chain data, not financial advice. Takes 2-8 s. Price: $0.02 per call via x402 (USDC on Base).",
+        "tags": [
+          "crypto",
+          "token",
+          "honeypot"
+        ],
+        "security": [
+          {
+            "x402": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "description": "Token contract address (EVM 0x... or Solana mint)"
+                  },
+                  "chain": {
+                    "type": "string",
+                    "description": "Optional: ethereum, base, bsc, arbitrum, polygon, optimism, avalanche or solana. Auto-detected if omitted."
+                  }
+                },
+                "required": [
+                  "address"
+                ]
+              },
+              "example": {
+                "address": "0x532f27101965dd16442E59d40670FaF5eBB142E4",
+                "chain": "base"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "score": {
+                      "type": "number"
+                    },
+                    "verdict": {
+                      "type": "string"
+                    },
+                    "honeypot": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    },
+                    "redFlags": {
+                      "type": "array"
+                    },
+                    "greenFlags": {
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "score",
+                    "verdict"
+                  ]
+                },
+                "example": {
+                  "address": "0x532f...42e4",
+                  "chain": "base",
+                  "name": "Brett",
+                  "symbol": "BRETT",
+                  "score": 88,
+                  "verdict": "looks ok",
+                  "honeypot": false,
+                  "buyTaxPct": 0,
+                  "sellTaxPct": 0,
+                  "liquidityUsd": 12500000,
+                  "pairAgeDays": 600,
+                  "redFlags": [],
+                  "greenFlags": [
+                    "Can be sold (no honeypot)",
+                    "Contract verified (open source)",
+                    "Ownership renounced"
+                  ],
+                  "website": {
+                    "url": "https://www.basedbrett.com",
+                    "score": 72,
+                    "verdict": "low risk signals"
+                  }
                 }
               }
             }

@@ -1,6 +1,6 @@
 # Rever
 
-> Rever is a pay-per-call toolbox of 39 website-intelligence endpoints for AI agents: give it a URL, get JSON back. Read pages as markdown or text, extract contacts, socials, metadata, sitemaps and structured data, audit SEO, AI-readiness, security headers, HTTPS and email security, look up DNS, WHOIS and Wayback history, detect tech stacks and trackers, check whether a crypto project's website looks legit, and turn a site's design into tokens, brand kits, screenshots or a prompt to rebuild its UI.
+> Rever is a pay-per-call toolbox of 40 website-intelligence endpoints for AI agents: give it a URL, get JSON back. Read pages as markdown or text, extract contacts, socials, metadata, sitemaps and structured data, audit SEO, AI-readiness, security headers, HTTPS and email security, look up DNS, WHOIS and Wayback history, detect tech stacks and trackers, check whether a crypto project's website looks legit, and turn a site's design into tokens, brand kits, screenshots or a prompt to rebuild its UI.
 
 No account needed. AI agents pay per request ($0.001 to $0.05) in USDC on Base with the standard x402 protocol: any x402 client (e.g. `@x402/fetch`, Coinbase AgentKit) pays automatically. People buy a pack of generations by card on the website.
 
@@ -9,7 +9,7 @@ No account needed. AI agents pay per request ($0.001 to $0.05) in USDC on Base w
 - Every endpoint: `POST` with JSON `{"url": "https://..."}` (some take an extra option, see the OpenAPI spec). Response: JSON.
 - Most answer in 1-3 s. You are only charged when the call succeeds.
 
-## Services (39, all paid per call with x402)
+## Services (40, all paid per call with x402)
 
 ### Read a page
 
@@ -59,6 +59,7 @@ No account needed. AI agents pay per request ($0.001 to $0.05) in USDC on Base w
 
 ### Crypto
 
+- `/api/token-check` ($0.02): Is this token safe to buy? One call returns a 0-100 safety score and verdict for any token contract (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana)
 - `/api/crypto-site-check` ($0.02): Due-diligence check of a crypto project's website before you buy or interact
 
 ### Design and visuals
@@ -67,14 +68,6 @@ No account needed. AI agents pay per request ($0.001 to $0.05) in USDC on Base w
 - `/api/design-tokens` ($0.02): Extract a website's design tokens as JSON
 - `/api/brand-kit` ($0.01): Get a website's brand kit in one call
 - `/api/screenshot` ($0.01): Screenshot any public web page
-
-## Discovery
-
-- One page per tool, with examples: https://www.aypiai.online/tools
-- x402 catalog: https://www.aypiai.online/.well-known/x402 (also /.well-known/x402.json)
-- A2A agent card: https://www.aypiai.online/.well-known/agent-card.json
-- MCP server card: https://www.aypiai.online/.well-known/mcp/server-card.json
-- agents.json: https://www.aypiai.online/agents.json
 
 ## API
 
@@ -88,6 +81,9 @@ No account needed. AI agents pay per request ($0.001 to $0.05) in USDC on Base w
 Buy prepaid credits at https://www.aypiai.online/credits ($5, $20 or $50, bigger packs get a bonus). You get a key (`cs_live_...`) valid on every tool: send it as `X-Access-Key: <key>` (or `Authorization: Bearer <key>`) on any API call, or as `access_key` in any MCP tool call. Each successful call deducts its price; failed calls are free. Balance: `GET /api/balance` with the same header.
 
 ## Payment (x402)
+
+Any x402-capable wallet pays automatically: Base MCP (mcp.base.org), Coinbase AgentKit, the x402-fetch / x402-axios clients, Cloudflare Agents. No API key, no signup.
+
 
 1. Call the endpoint without payment → HTTP 402 with a `PAYMENT-REQUIRED` header (x402 v2): scheme `exact`, network `eip155:8453` (Base), asset USDC, the amount of the endpoint (e.g. `1000` = $0.001).
 2. Your x402 client signs a USDC authorization (gasless for you) and retries with the `PAYMENT-SIGNATURE` header.

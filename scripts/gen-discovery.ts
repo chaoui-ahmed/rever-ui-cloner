@@ -69,7 +69,7 @@ const groups: [string, string[]][] = [
   ["Companies and leads", ["company-info", "contacts", "social-links", "tech-stack", "trackers"]],
   ["SEO and site audits", ["seo-audit", "ai-readiness", "broken-links", "sitemap", "robots", "page-weight", "redirects"]],
   ["Security, domain and network", ["security-headers", "https-check", "dns", "email-security", "domain-whois", "wayback", "headers", "status"]],
-  ["Crypto", ["crypto-site-check"]],
+  ["Crypto", ["token-check", "crypto-site-check"]],
   ["Design and visuals", ["generate-prompt", "design-tokens", "brand-kit", "screenshot"]],
 ];
 const byName = new Map(SERVICES.map((s) => [s.path.replace("/api/", ""), s]));

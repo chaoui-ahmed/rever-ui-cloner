@@ -26,9 +26,16 @@ export async function readJsonBody(request: Request): Promise<Record<string, unk
   }
 }
 
+type Validate = (body: Record<string, unknown>) => { ok: string } | { error: string };
+const urlInput: Validate = (body) => {
+  const url = validateTargetUrl(body.url);
+  return url ? { ok: url } : { error: 'Valid public http(s) URL required in field "url"' };
+};
+
 export function paidEndpoint(
-  run: (env: Env, url: string, body: Record<string, unknown>) => Promise<unknown>,
+  run: (env: Env, input: string, body: Record<string, unknown>) => Promise<unknown>,
   docsHint: string,
+  validate: Validate = urlInput,
 ) {
   const onRequest: PagesFunction<Env> = async ({ request, env }) => {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
@@ -45,8 +52,9 @@ export function paidEndpoint(
       const state = await resolveKey(env, key);
       if (state.kind === "error") return withCors(json({ error: state.reason }, state.status));
       if (state.kind === "legacy") return withCors(json({ error: "This key is an old pack valid on /api/generate-prompt only. Buy credits for all tools at https://www.aypiai.online/credits" }, 402));
-      const url = validateTargetUrl(body.url);
-      if (!url) return withCors(json({ error: "Valid public http(s) URL required in field \"url\"" }, 400));
+      const v = validate(body);
+      if ("error" in v) return withCors(json({ error: v.error }, 400));
+      const url = v.ok;
       const units = Math.round(Number(svc.priceUsd) * UNITS_PER_USD);
       const left = await charge(env, key, units);
       if (left === null) return withCors(json({ error: `Not enough credit: this call costs $${svc.priceUsd}, balance $${usd(state.balanceUnits)}. Top up at https://www.aypiai.online/credits` }, 402));
@@ -63,10 +71,10 @@ export function paidEndpoint(
 
     const res = await withX402(env, request, body, async () => {
       // Runs only after payment is verified; a 4xx/5xx here cancels the payment (never charged).
-      const url = validateTargetUrl(body.url);
-      if (!url) return json({ error: "Valid public http(s) URL required in field \"url\"" }, 400);
+      const v = validate(body);
+      if ("error" in v) return json({ error: v.error }, 400);
       try {
-        return json(await run(env, url, body));
+        return json(await run(env, v.ok, body));
       } catch (err) {
         return json({ error: (err as Error).message }, err instanceof UpstreamError ? 502 : 500);
       }

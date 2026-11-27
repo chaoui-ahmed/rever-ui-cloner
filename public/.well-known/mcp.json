@@ -1,7 +1,7 @@
 {
   "name": "rever-ui-cloner",
   "title": "Rever",
-  "description": "40 website-intelligence tools for agents. 20 free calls/day on most tools, then $0.001 to $0.05 per call (x402, USDC on Base): page to markdown, contacts, socials, SEO and security audits, DNS, WHOIS, tech stack, crypto project trust check, design tokens, screenshots, UI-recreation prompts.",
+  "description": "41 website-intelligence tools for agents. 20 free calls/day on most tools, then $0.001 to $0.05 per call (x402, USDC on Base): page to markdown, contacts, socials, SEO and security audits, DNS, WHOIS, tech stack, crypto project trust check, design tokens, screenshots, UI-recreation prompts.",
   "version": "4.0.0",
   "repository": "https://github.com/chaoui-ahmed/rever-ui-cloner",
   "documentation": "https://www.aypiai.online/llms-full.txt",
@@ -682,6 +682,26 @@
         },
         "required": [
           "url"
+        ]
+      }
+    },
+    {
+      "name": "token_check",
+      "description": "Is this token safe to buy? One call returns a 0-100 safety score and verdict for any token contract (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana) ($0.02)",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Token contract address (EVM 0x... or Solana mint)"
+          },
+          "chain": {
+            "type": "string",
+            "description": "Optional: ethereum, base, bsc, arbitrum, polygon, optimism, avalanche or solana. Auto-detected if omitted."
+          }
+        },
+        "required": [
+          "address"
         ]
       }
     }

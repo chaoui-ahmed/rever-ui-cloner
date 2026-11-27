@@ -3,6 +3,7 @@
 import { parse, type HTMLElement } from "node-html-parser";
 import { type Env, validateTargetUrl, UpstreamError } from "./_shared";
 import { UA, abs, meta } from "./_web";
+import { TOKEN_CHECK } from "./_token";
 
 export type MicroDef = {
   path: string;
@@ -13,6 +14,8 @@ export type MicroDef = {
   inputSchema: Record<string, unknown>;
   outputExample: Record<string, unknown>;
   outputSchema: Record<string, unknown>;
+  /** Body field validated instead of "url" (default url). */
+  inputKey?: "address";
 };
 type Run = (env: Env, url: string, body: Record<string, unknown>) => Promise<unknown>;
 export type Micro = { def: MicroDef; run: Run };
@@ -1108,4 +1111,5 @@ export const MICRO: Micro[] = [
       };
     },
   },
+  TOKEN_CHECK,
 ];

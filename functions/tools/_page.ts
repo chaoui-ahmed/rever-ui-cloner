@@ -42,7 +42,7 @@ export function toolPage(s: ServiceDef): Response {
   -H "Content-Type: application/json" \\
   -H "X-Access-Key: YOUR_CREDIT_KEY" \\
   -d '${esc(body)}'</pre>
-<p>No key? Without one the endpoint answers <code>402 Payment Required</code> with an x402 <code>PAYMENT-REQUIRED</code> header: any x402 client (USDC on Base, gasless) pays $${s.priceUsd} and retries automatically. Or buy card credits at <a href="/credits">/credits</a> (from $5, valid on all tools). Failed calls are never charged.</p>
+<p>No key? Without one the endpoint answers <code>402 Payment Required</code> with an x402 <code>PAYMENT-REQUIRED</code> header: any x402 client (USDC on Base, gasless) pays $${s.priceUsd} and retries automatically. Works with any x402 wallet: <b>Base MCP</b>, <b>Coinbase AgentKit</b>, <code>x402-fetch</code> / <code>x402-axios</code>, Cloudflare Agents. Or buy card credits at <a href="/credits">/credits</a> (from $5, valid on all tools). Failed calls are never charged.</p>
 <h2>Input</h2><pre>${esc(JSON.stringify(s.inputSchema, null, 2))}</pre>
 <h2>Example output</h2><pre>${esc(JSON.stringify(s.outputExample, null, 2))}</pre>
 <h2>Related tools</h2><p>${SERVICES.filter((o) => o !== s && o.tags.some((t) => s.tags.includes(t))).slice(0, 8).map((o) => `<a href="/tools/${slug(o)}">${esc(shortTitle(o))}</a> ($${o.priceUsd})`).join(" · ") || `<a href="/tools">All tools</a>`}</p>`;

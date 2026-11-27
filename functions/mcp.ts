@@ -157,7 +157,8 @@ async function handle(msg: RpcRequest, request: Request, env: Env) {
       const tool = TOOLS.find((t) => t.name === name);
       if (!tool) return rpcError(msg.id, -32602, `Unknown tool: ${name}`);
       const args = msg.params?.arguments ?? {};
-      if (!args.url || typeof args.url !== "string") return rpcError(msg.id, -32602, "Missing required argument: url");
+      const missing = (tool.inputSchema.required ?? []).filter((k: string) => typeof args[k] !== "string" || !args[k]);
+      if (missing.length) return rpcError(msg.id, -32602, `Missing required argument: ${missing.join(", ")}`);
       return rpcResult(msg.id, await callTool(env, request, tool, args, msg.params?._meta));
     }
     case "resources/list":

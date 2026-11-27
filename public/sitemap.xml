@@ -49,5 +49,6 @@
   <url><loc>https://www.aypiai.online/tools/page-weight</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.aypiai.online/tools/wayback</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.aypiai.online/tools/crypto-site-check</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.aypiai.online/tools/token-check</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://www.aypiai.online/terms</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>
