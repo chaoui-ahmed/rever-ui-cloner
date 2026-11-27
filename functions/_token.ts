@@ -47,7 +47,7 @@ export const TOKEN_CHECK: Micro = {
     path: "/api/token-check",
     priceUsd: "0.02",
     description:
-      "Is this token safe to buy? One call returns a 0-100 safety score and verdict for any token contract (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana): honeypot test (can you sell?), buy/sell tax, mint/pause/blacklist/owner powers, proxy and open-source status, liquidity and LP lock, holder concentration, pair age, volume, plus a check of the project's website (domain age, socials, scam signals). Auto-detects the chain. Heuristics from public on-chain data, not financial advice. Takes 2-8 s.",
+      "Is this token safe to buy? 0-100 safety score and verdict for any token (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana): honeypot test, buy/sell tax, mint/pause/blacklist/owner powers, verified source, liquidity and LP lock, holder concentration, pair age, plus a check of the project website. Chain auto-detected. Public on-chain data, not financial advice. 2-8 s.",
     tags: ["crypto", "token", "honeypot", "rug-pull", "token-security", "scam-check", "defi", "memecoin", "trading", "due-diligence"],
     inputExample: { address: "0x532f27101965dd16442E59d40670FaF5eBB142E4", chain: "base" },
     inputSchema: {
@@ -64,7 +64,7 @@ export const TOKEN_CHECK: Micro = {
       redFlags: [], greenFlags: ["Can be sold (no honeypot)", "Contract verified (open source)", "Ownership renounced"],
       website: { url: "https://www.basedbrett.com", score: 72, verdict: "low risk signals" },
     },
-    outputSchema: { type: "object", properties: { score: { type: "number" }, verdict: { type: "string" }, honeypot: { type: ["boolean", "null"] }, redFlags: { type: "array" }, greenFlags: { type: "array" } }, required: ["score", "verdict"] },
+    outputSchema: { type: "object", properties: { score: { type: "number" }, verdict: { type: "string" }, honeypot: { type: "boolean" }, redFlags: { type: "array" }, greenFlags: { type: "array" } }, required: ["score", "verdict"] },
     inputKey: "address",
   },
   run: async (env, address, body) => {

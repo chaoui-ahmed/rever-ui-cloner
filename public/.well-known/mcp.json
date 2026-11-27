@@ -687,7 +687,7 @@
     },
     {
       "name": "token_check",
-      "description": "Is this token safe to buy? One call returns a 0-100 safety score and verdict for any token contract (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana) ($0.02)",
+      "description": "Is this token safe to buy? 0-100 safety score and verdict for any token (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana) ($0.02)",
       "inputSchema": {
         "type": "object",
         "properties": {

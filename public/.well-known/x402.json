@@ -1430,7 +1430,7 @@
       "scheme": "exact",
       "price": "$0.02",
       "amount": "20000",
-      "description": "Is this token safe to buy? One call returns a 0-100 safety score and verdict for any token contract (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana): honeypot test (can you sell?), buy/sell tax, mint/pause/blacklist/owner powers, proxy and open-source status, liquidity and LP lock, holder concentration, pair age, volume, plus a check of the project's website (domain age, socials, scam signals). Auto-detects the chain. Heuristics from public on-chain data, not financial advice. Takes 2-8 s.",
+      "description": "Is this token safe to buy? 0-100 safety score and verdict for any token (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana): honeypot test, buy/sell tax, mint/pause/blacklist/owner powers, verified source, liquidity and LP lock, holder concentration, pair age, plus a check of the project website. Chain auto-detected. Public on-chain data, not financial advice. 2-8 s.",
       "tags": [
         "crypto",
         "token",

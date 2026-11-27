@@ -59,7 +59,7 @@ No account needed. AI agents pay per request ($0.001 to $0.05) in USDC on Base w
 
 ### Crypto
 
-- `/api/token-check` ($0.02): Is this token safe to buy? One call returns a 0-100 safety score and verdict for any token contract (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana)
+- `/api/token-check` ($0.02): Is this token safe to buy? 0-100 safety score and verdict for any token (Ethereum, Base, BSC, Arbitrum, Polygon, Optimism, Avalanche, Solana)
 - `/api/crypto-site-check` ($0.02): Due-diligence check of a crypto project's website before you buy or interact
 
 ### Design and visuals
