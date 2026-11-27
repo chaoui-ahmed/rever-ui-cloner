@@ -30,11 +30,15 @@ const normChain = (c: unknown): string | null => {
   return Object.entries(CHAINS).find(([name, v]) => name === k || v.aliases.includes(k))?.[0] ?? null;
 };
 
+const diag: string[] = [];
 async function getJson(url: string, ms = 8000): Promise<any | null> {
+  const host = new URL(url).host;
   try {
-    const r = await fetch(url, { headers: { Accept: "application/json", "User-Agent": "ReverBot/1.0 (+https://www.aypiai.online)" }, signal: AbortSignal.timeout(ms) });
-    return r.ok ? await r.json() : null;
-  } catch {
+    const r = await fetch(url, { headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0 (compatible; ReverBot/1.0; +https://www.aypiai.online)" }, signal: AbortSignal.timeout(ms) });
+    if (!r.ok) { diag.push(`${host} ${r.status}`); return null; }
+    return await r.json();
+  } catch (e) {
+    diag.push(`${host} ${(e as Error).name}`);
     return null;
   }
 }
@@ -68,6 +72,7 @@ export const TOKEN_CHECK: Micro = {
     inputKey: "address",
   },
   run: async (env, address, body) => {
+    diag.length = 0;
     const isSol = !EVM.test(address);
     const dex = await getJson(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
     const pairs: any[] = (dex?.pairs ?? []).filter((p: any) => p?.baseToken?.address?.toLowerCase() === address.toLowerCase() || p?.quoteToken?.address?.toLowerCase() === address.toLowerCase());
@@ -76,7 +81,7 @@ export const TOKEN_CHECK: Micro = {
       const best = [...pairs].sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0))[0];
       chain = normChain(best?.chainId) ?? (isSol ? "solana" : null);
     }
-    if (!chain) throw new UpstreamError('Could not detect the chain: no trading pair found. Pass "chain" (ethereum, base, bsc, arbitrum, polygon, optimism, avalanche, solana).');
+    if (!chain) throw new UpstreamError(`Could not detect the chain: no trading pair found. Pass "chain" (ethereum, base, bsc, arbitrum, polygon, optimism, avalanche, solana).${diag.length ? ` [${diag.join(", ")}]` : ""}`);
     if (isSol !== (chain === "solana")) throw new UpstreamError(`Address format does not match chain ${chain}`);
     const cfg = CHAINS[chain];
     const chainPairs = pairs.filter((p) => normChain(p.chainId) === chain).sort((a, b) => (b.liquidity?.usd ?? 0) - (a.liquidity?.usd ?? 0));
@@ -89,7 +94,7 @@ export const TOKEN_CHECK: Micro = {
       cfg.honeypot ? getJson(`https://api.honeypot.is/v2/IsHoneypot?address=${address}&chainID=${cfg.honeypot}`) : Promise.resolve(null),
     ]);
     const sec: any = gp?.result?.[chain === "solana" ? address : address.toLowerCase()] ?? (gp?.result ? Object.values(gp.result)[0] : null);
-    if (!sec && !main) throw new UpstreamError("No security or market data found for this token on " + chain);
+    if (!sec && !main) throw new UpstreamError(`No security or market data found for this token on ${chain}${diag.length ? ` [${diag.join(", ")}]` : ""}`);
 
     const red: string[] = [];
     const green: string[] = [];
