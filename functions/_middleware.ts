@@ -13,7 +13,7 @@ export const onRequest: PagesFunction<Env> = async ({ request, env, next, waitUn
     ? new Response(null, { status: 405, headers: { Allow: "POST, OPTIONS" } })
     : await next());
   // Missing files never fall back to the SPA page (scanners and agents should see a real 404)
-  if (response.status === 200 && isFileLike(pathname) && (response.headers.get("content-type") ?? "").includes("text/html")) {
+  if (response.status === 200 && (isFileLike(pathname) || pathname.startsWith("/api/")) && (response.headers.get("content-type") ?? "").includes("text/html")) {
     response = new Response("Not found", { status: 404, headers: { "Content-Type": "text/plain" } });
   }
   const ua = request.headers.get("User-Agent") ?? "";
